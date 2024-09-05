@@ -125,7 +125,7 @@
 </head>
 
 <body>
-    @include('notify::components.notify')
+    {{-- @include('notify::components.notify') --}}
 
     <!-- Top Header -->
     <div class="menu-toggel">
