@@ -16,9 +16,11 @@ Route::get('/logout', [UserController::class, 'logout'])->name('admin.logout');
 
 
  // Admin Routes (Accessible only by admin users)
- Route::group(['middleware' => ['auth']], function () {
-    Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
-});
+//  Route::group(['middleware' => ['auth']], function () {
+//     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+// });
+Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+
 
 
 
