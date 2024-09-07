@@ -97,7 +97,7 @@ class UserController extends Controller
             'sector' => 'required|string',
             'user_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
-    
+
         if ($validate->fails()) {
             // Notify the user and return validation errors back to the view
             notify()->error('Invalid Credentials.');
@@ -105,19 +105,20 @@ class UserController extends Controller
                 ->withErrors($validate)
                 ->withInput();
         }
-    
+
         // Handle the file upload if it exists
         $fileName = null;
         if ($request->hasFile('user_image')) {
             $file = $request->file('user_image');
             $fileName = date('Ymdhis') . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('/uploads', $fileName);
+            $file->storeAs('/uploads', $fileName, 'public');
         }
-    
+
+        // Insert user data using raw SQL
         // Insert user data using raw SQL
         DB::insert('
-            INSERT INTO users (name, role, guardID, phone, idcard, district, sector, email, password, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+INSERT INTO users (name, role, guardID, phone, idcard, district, sector, email, password, user_image, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
             $request->name,
             $request->role,
             $request->guardID,
@@ -126,10 +127,10 @@ class UserController extends Controller
             $request->district,
             $request->sector,
             $request->email,
-            
-            Hash::make($request->password)  // Securely hash the password
+            Hash::make($request->password),  // Securely hash the password
+            $fileName // The user image filename
         ]);
-    
+
         notify()->success('User created successfully.');
         return redirect()->route('organization.member');
     }
@@ -153,7 +154,7 @@ class UserController extends Controller
 
 
 
-        return view('admin.pages.Users.nonEmployeeProfile', compact('user','loans', 'shares'));
+        return view('admin.pages.Users.nonEmployeeProfile', compact('user', 'loans', 'shares'));
     }
 
     public function userDelete($id)

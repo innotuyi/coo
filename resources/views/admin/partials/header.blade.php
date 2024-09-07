@@ -28,7 +28,10 @@
             <!-- User Info Dropdown -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle text-white" id="userInfo" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <img class="avatar rounded-circle" alt="User Avatar">
+                    <img class="avatar rounded-circle" alt="User Avatar" 
+                     src="{{ isset(auth()->user()->user_image) ? 
+                    url('storage/uploads/' . auth()->user()->user_image) : 
+                    asset('assests/image/default.png') }}">
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated" aria-labelledby="userInfo">
                     <div class="dropdown-header text-dark">
