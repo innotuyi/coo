@@ -9,6 +9,7 @@ use App\Models\Member;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class LoanController extends Controller
@@ -35,51 +36,48 @@ class LoanController extends Controller
   
     public function store(Request $request)
     {
+        // Validate the input
         $validate = Validator::make($request->all(), [
-            'amount'=>'required',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:from_date',
-            'interest_rate' => '|min:0',
-            'userID' => 'required',
-
+            'amount' => 'required|numeric|min:0',
+            'start_date' => 'required|date|after:today',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'interest_rate' => 'nullable|numeric|min:0',
+            'userID' => 'required|exists:users,id',
         ]);
-
-      
-
-
-
+    
         if ($validate->fails()) {
             notify()->error($validate->getMessageBag());
             return redirect()->back();
         }
-
-        // Ensure 'from_date' is not in the past
+    
+        // Ensure 'start_date' is not in the past
         $today = Carbon::today();
-        $fromDate = Carbon::parse($request->from_date);
-
+        $fromDate = Carbon::parse($request->start_date);
+        $toDate = Carbon::parse($request->end_date);
+    
         if ($fromDate->lessThanOrEqualTo($today)) {
             notify()->error('Loan start date should be a future date.');
             return redirect()->back();
         }
-
-        $fromDate = Carbon::parse($request->start_date);
-        $toDate = Carbon::parse($request->end_date);
-        $totalDays = $toDate->diffInDays($fromDate) + 1; // Calculate total days
-
-     
-        loan::create([
-            'start_date' =>$fromDate,
-            'end_date' =>$toDate,
-            'interest_rate' =>$request->interest_rate,
-            'amount' =>$request->amount,
-            'userID' =>$request->userID,
-            'status' => "0", // Store the status (approved or not)
+    
+        // Calculate total days (optional if needed)
+        $totalDays = $toDate->diffInDays($fromDate) + 1;
+    
+        // Insert new loan record using raw SQL
+        DB::insert('
+            INSERT INTO loans (userID, amount, start_date, end_date, interest_rate, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->userID,
+            $request->amount,
+            $fromDate,
+            $toDate,
+            $request->interest_rate,
+            '0' // Loan status, 0 for not approved
         ]);
-
-        notify()->success('Applied Loan successfuly');
+    
+        notify()->success('Applied Loan successfully');
         return redirect()->back();
     }
-
 
     public function myLeave()
     {

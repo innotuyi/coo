@@ -16,6 +16,7 @@ use App\Models\Share;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class OrganizationController extends Controller
@@ -68,17 +69,17 @@ class OrganizationController extends Controller
 
     public function shareStore(Request $request)
     {
+        // Validate the input
         $validate = Validator::make($request->all(), [
-            'userID' => 'required|exists:users,id',       // Member ID must exist in the members table
-            'amount' => 'nullable|numeric|min:0',             // Amount must be a number greater than or equal to 0
-            'joining_date' => 'nullable|date',                // Joining date must be a valid date
-            'amount_increase' => 'nullable|numeric|min:0',    // Amount increase (optional), must be a number
-            'interest_rate' => 'nullable|numeric|min:0', // Interest rate (optional), between 0 and 100
-            'total_share' => 'nullable|numeric|min:0',            // Sector is required
+            'userID' => 'required|exists:users,id',            // UserID must exist in the users table
+            'amount' => 'nullable|numeric|min:0',              // Amount must be a number greater than or equal to 0
+            'joining_date' => 'nullable|date',                 // Joining date must be a valid date
+            'amount_increase' => 'nullable|numeric|min:0',     // Amount increase (optional), must be a number
+            'interest_rate' => 'nullable|numeric|min:0',       // Interest rate (optional), between 0 and 100
+            'total_share' => 'nullable|numeric|min:0',         // Total share
         ]);
 
         if ($validate->fails()) {
-
             notify()->error($validate->getMessageBag());
             return redirect()->back();
         }
@@ -86,25 +87,23 @@ class OrganizationController extends Controller
         $joining_date = Carbon::parse($request->joining_date);
 
         // Fetch existing values for the user
-        $share = Share::where('userID', $request->userID)->first();
+        $share = DB::table('shares')->where('userID', $request->userID)->first();
 
-        // If the user has previous records, calculate the total share
-        if ($share) {
-            $total_share = $share->amount + $share->amount_increase + $share->interest_rate;
-        } else {
-            // If no previous record, set it to zero
-            $total_share = 0;
-        }
+        // Calculate total share
+        $total_share = $share
+            ? $share->amount + $share->amount_increase + $share->interest_rate
+            : 0;
 
-        // Create a new Share record with updated fields
-        Share::create([
-            'userID' => $request->userID,
-            'amount' => $request->amount,
-            'joining_date' => $joining_date,
-            'amount_increase' => $request->amount_increase,
-            'interest_rate' => $request->interest_rate,
-            // Add the fetched values to the new ones
-            'total_share' => $total_share + $request->amount + $request->amount_increase + $request->interest_rate,
+        // Insert a new Share record using raw SQL
+        DB::insert('
+        INSERT INTO shares (userID, amount, joining_date, amount_increase, interest_rate, total_share, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->userID,
+            $request->amount,
+            $joining_date,
+            $request->amount_increase,
+            $request->interest_rate,
+            $total_share + $request->amount + $request->amount_increase + $request->interest_rate
         ]);
 
         notify()->success('New share created successfully.');
@@ -625,7 +624,13 @@ class OrganizationController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        Agent::create($request->all());
+        // Insert into the 'agents' table using raw SQL
+        DB::insert('INSERT INTO agents (name, service, contact, location, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())', [
+            $request->name,
+            $request->service,
+            $request->contact,
+            $request->location
+        ]);
         return redirect()->route('organization.agent')->with('success', 'Agent created successfully.');
     }
 
@@ -644,15 +649,24 @@ class OrganizationController extends Controller
             'contact' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
         ]);
-
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
+        // Check if the agent exists
+        $agent = DB::select('SELECT * FROM agents WHERE id = ?', [$id]);
 
-        $agent = Agent::findOrFail($id);
+        if (!$agent) {
+            return redirect()->back()->withErrors(['Agent not found.'])->withInput();
+        }
 
-        $agent->update($request->all());
-
+        // Update using raw SQL
+        DB::update('UPDATE agents SET name = ?, service = ?, contact = ?, location = ?, updated_at = NOW() WHERE id = ?', [
+            $request->name,
+            $request->service,
+            $request->contact,
+            $request->location,
+            $id,
+        ]);
         return redirect()->route('organization.agent')->with('success', 'Agent updated successfully.');
     }
 
@@ -682,7 +696,7 @@ class OrganizationController extends Controller
     public function agentProfitStore(Request $request)
     {
 
-
+        // Validate the input
         $validator = Validator::make($request->all(), [
             'agent_id' => 'required|exists:agents,id',
             'profit' => 'required|numeric',
@@ -693,7 +707,12 @@ class OrganizationController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        AgentProfit::create($request->all());
+        // Insert using raw SQL
+        DB::insert('INSERT INTO agent_profits (agent_id, profit, month, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())', [
+            $request->agent_id,
+            $request->profit,
+            $request->month,
+        ]);
 
         return redirect()->route('organization.agentProfit')->with('success', 'Agent Profit added successfully.');
     }
@@ -752,32 +771,6 @@ class OrganizationController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public function departmentList()
     {
         $guardians = Guardian::all();
@@ -803,13 +796,14 @@ class OrganizationController extends Controller
             return redirect()->back()->withErrors($validate);
         }
 
-        Guardian::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'idcard' => $request->idcard,
-            'district' => $request->district,
-            'sector' => $request->sector,
+        DB::insert('INSERT INTO guardians (name, phone, idcard, district, sector, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->name,
+            $request->phone,
+            $request->idcard,
+            $request->district,
+            $request->sector
         ]);
+
         notify()->success('New Guardian created successfully.');
         return redirect()->back();
     }
@@ -833,14 +827,17 @@ class OrganizationController extends Controller
             return redirect()->back()->withErrors($validate);
         }
 
-        Member::create([
-            'name' => $request->name,
-            'guardID' => $request->guardID,
-            'phone' => $request->phone,
-            'idcard' => $request->idcard,
-            'district' => $request->district,
-            'sector' => $request->sector,
+        DB::insert('INSERT INTO members (name, guardID, phone, idcard, district, sector, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->name,
+            $request->guardID,
+            $request->phone,
+            $request->idcard,
+            $request->district,
+            $request->sector
         ]);
+
+        notify()->success('New Member created successfully.');
+        return redirect()->back();
         notify()->success('New member created successfully.');
         return redirect()->back();
     }

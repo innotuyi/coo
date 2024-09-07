@@ -10,6 +10,8 @@ use App\Models\Share;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -82,9 +84,10 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        // Validate the input
         $validate = Validator::make($request->all(), [
-            'name' => 'required',
-            'role' => 'required',
+            'name' => 'required|string|max:255',
+            'role' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'guardID' => 'nullable|exists:guardians,id',
@@ -92,52 +95,43 @@ class UserController extends Controller
             'idcard' => 'required|min:16|max:16',
             'district' => 'required|string',
             'sector' => 'required|string',
+            'user_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
-
+    
         if ($validate->fails()) {
             // Notify the user and return validation errors back to the view
             notify()->error('Invalid Credentials.');
-
-            // Redirect back with input and error messages
             return redirect()->back()
                 ->withErrors($validate)
-                ->withInput(); // This retains the input data so the user doesn’t have to retype everything
+                ->withInput();
         }
-
-
+    
+        // Handle the file upload if it exists
         $fileName = null;
         if ($request->hasFile('user_image')) {
             $file = $request->file('user_image');
             $fileName = date('Ymdhis') . '.' . $file->getClientOriginalExtension();
-
             $file->storeAs('/uploads', $fileName);
         }
-
-        $user = User::create([
-            'name' => $request->name,
-            'role' => $request->role,
-            'guardID' => $request->guardID,
-            'phone' => $request->phone,
-            'idcard' => $request->idcard,
-            'district' => $request->district,
-            'sector' => $request->sector,
-            'image' => $fileName,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
+    
+        // Insert user data using raw SQL
+        DB::insert('
+            INSERT INTO users (name, role, guardID, phone, idcard, district, sector, email, password, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->name,
+            $request->role,
+            $request->guardID,
+            $request->phone,
+            $request->idcard,
+            $request->district,
+            $request->sector,
+            $request->email,
+            
+            Hash::make($request->password)  // Securely hash the password
         ]);
-
-        // Optionally link to an employee
-        //$employee = Employee::where('email', $request->email)->first();
-        if ($user) {
-            // $employee->user_id = $user->id;
-            // $employee->save();
-            notify()->success('User created successfully.');
-            return redirect()->route('organization.member');
-        }
-
+    
         notify()->success('User created successfully.');
-        // return redirect()->route('users.list');
-
+        return redirect()->route('organization.member');
     }
 
     public function myProfile()
