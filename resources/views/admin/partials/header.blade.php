@@ -10,7 +10,8 @@
         <ul class="ms-auto d-flex align-items-center list-unstyled mb-0">
             <!-- Notifications Icon -->
             <li class="nav-item dropdown me-3">
-                <a class="nav-link text-white" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="nav-link text-white" href="#" data-bs-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
                     <i class="fas fa-bell"></i>
                     <span class="badge bg-danger rounded-pill">3</span>
                 </a>
@@ -26,26 +27,32 @@
             </li>
 
             <!-- User Info Dropdown -->
+            <!-- User Info Dropdown -->
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle text-white" id="userInfo" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <img class="avatar rounded-circle" alt="User Avatar" 
-                     src="{{ isset(auth()->user()->user_image) ? 
-                    url('storage/uploads/' . auth()->user()->user_image) : 
-                    asset('assests/image/default.png') }}">
+                <a class="nav-link dropdown-toggle text-white" id="userInfo" href="#" data-bs-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    <img class="avatar rounded-circle" alt="User Avatar"
+                        src="{{ isset(auth()->user()->user_image)
+                            ? url('storage/uploads/' . auth()->user()->user_image)
+                            : asset('assests/image/default.png') }}">
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated" aria-labelledby="userInfo">
                     <div class="dropdown-header text-dark">
-                        <h6 class="text-uppercase font-weight-bold"></h6>
-                        <small class="text-muted"></small>
+                        <h6 class="text-uppercase font-weight-bold">{{ auth()->user()->name }}</h6>
+                        <small class="text-muted">{{ auth()->user()->email }}</small>
                     </div>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">Profile</a>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                        data-bs-target="#profileModal">Profile</a>
                     <a class="dropdown-item" href="#">Settings</a>
                     <a class="dropdown-item" href="#">Help</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger"  href="{{ route('admin.logout') }}">Logout</a>
+                    <a class="dropdown-item text-danger" href="{{ route('admin.logout') }}">Logout</a>
                 </div>
             </li>
+
+
+
         </ul>
     </nav>
 </header>
@@ -93,6 +100,7 @@
             opacity: 0;
             transform: translateY(-10px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);

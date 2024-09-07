@@ -47,10 +47,12 @@
                             <th>NO</th>
                             <th>Name</th>
                             <th>Guardian</th>
+                            <th>Relationship</th>
                             <th>Telephone</th>
                             <th>Email</th>
                             <th>Role</th>
                             <th>District</th>
+                            <th>Join Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -60,13 +62,15 @@
                             <td>{{ $key + 1 }}</td>
                             <td>{{ $item->name }}</td>
                             <td>{{ $item->guardian_name }}</td>
+                            <td>{{ $item->user_relationship }}</td>
                             <td>{{ $item->phone }}</td>
                             <td>{{ $item->email }}</td>
                             <td>{{ $item->role }}</td>
                             <td>{{ $item->district }}</td>
+                            <td>{{ $item->created_at }}</td>
                             <td>
                                 <a class="btn btn-success rounded-pill fw-bold text-white"
-                                    href="{{ route('Organization.edit', $item->id) }}">Edit</a>
+                                    href="{{ route('edit', $item->id) }}">Edit</a>
                                 <a class="btn btn-danger rounded-pill fw-bold text-white"
                                     href="{{ route('Organization.delete', $item->id) }}">Delete</a>
                             </td>
@@ -128,6 +132,24 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="relationship_type" class="form-label">Relationship Type</label>
+                        <select class="form-control" name="user_relationship" id="user_relationship" required>
+                            <option value="" disabled selected>Select a relationship type</option>
+                            <option value="mother">Mother</option>
+                            <option value="father">Father</option>
+                            <option value="spouse">Spouse</option>
+                            <option value="sibling">Sibling</option>
+                            <option value="child">Child</option>
+                            <option value="friend">Friend</option>
+                            <option value="colleague">Colleague</option>
+                            <option value="neighbor">Neighbor</option>
+                            <option value="guardian">Guardian</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
                 
                     <!-- National ID -->
                     <div class="mb-3">

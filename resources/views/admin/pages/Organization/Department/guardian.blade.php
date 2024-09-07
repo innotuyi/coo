@@ -10,6 +10,16 @@
 </div>
 
 <div class="container my-5 py-5">
+
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <!--Section: Table Block-->
     <section>
         <div class="d-flex justify-content-end mb-4">
@@ -37,6 +47,7 @@
                             <th>Phone</th>
                             <th>District</th>
                             <th>Sector</th>
+                            <th>Image</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -49,6 +60,7 @@
                             <td>{{ $item->phone }}</td>
                             <td>{{ $item->district }}</td>
                             <td>{{ $item->sector }}</td>
+                            <td><img src="{{ url('storage/uploads/' . $item->guardian_image) }}" alt="Guardian Image" style="width:50px; height:50px;"></td>
                             <td>
                                 <a class="btn btn-success rounded-pill fw-bold text-white"
                                     href="{{ route('Organization.edit', $item->id) }}">Edit</a>
@@ -74,7 +86,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('organization.department.store') }}" method="post">
+                <form action="{{ route('organization.department.store') }}" method="post" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
@@ -95,6 +107,12 @@
                     <div class="mb-3">
                         <label for="sector" class="form-label">Sector</label>
                         <input type="text" class="form-control" name="sector" placeholder="Enter sector" required>
+                    </div>
+
+                      <!-- Image (optional) -->
+                      <div class="mb-3">
+                        <label for="user_image" class="form-label">Profile Image</label>
+                        <input type="file" class="form-control" name="guardian_image">
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-success">Create</button>

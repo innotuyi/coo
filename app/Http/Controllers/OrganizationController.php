@@ -778,36 +778,43 @@ class OrganizationController extends Controller
     }
     public function store(Request $request)
     {
-        // dd($request->all());
-
+        // Validate the input
         $validate = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',            // Guardian name
-            'phone' => 'required|digits:10', // Exactly 10 digits for phone number
-            'idcard' => 'required|digits:16|unique:guardians,idcard', // Exactly 16 digits for ID card, must be unique
-            'district' => 'required|string|max:255',        // District is required
-            'sector' => 'required|string|max:255',          // Sector is required
+            'name' => 'required|string|max:255',
+            'phone' => 'required|digits:10',
+            'idcard' => 'required|digits:16|unique:guardians,idcard',
+            'district' => 'required|string|max:255',
+            'sector' => 'required|string|max:255',
+            'guardian_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate guardian image
         ]);
-
+    
         if ($validate->fails()) {
-
-            notify()->error($validate->getMessageBag());
-            return redirect()->back();
-
+            // notify()->error($validate->getMessageBag());
             return redirect()->back()->withErrors($validate);
         }
-
-        DB::insert('INSERT INTO guardians (name, phone, idcard, district, sector, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())', [
+    
+        // Handle the file upload if it exists
+        $fileName = null;
+        if ($request->hasFile('guardian_image')) {
+            $file = $request->file('guardian_image');
+            $fileName = time() . '.' . $file->getClientOriginalExtension(); // Create a unique file name
+            $file->storeAs('uploads', $fileName, 'public'); // Store in storage/app/public/uploads
+        }
+    
+        // Insert guardian data into the database
+        DB::insert('INSERT INTO guardians (name, phone, idcard, district, sector, guardian_image, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())', [
             $request->name,
             $request->phone,
             $request->idcard,
             $request->district,
-            $request->sector
+            $request->sector,
+            $fileName
         ]);
-
+    
         notify()->success('New Guardian created successfully.');
         return redirect()->back();
     }
-
+    
     public function memberStore(Request $request)
     {
 
@@ -853,7 +860,7 @@ class OrganizationController extends Controller
     }
     public function edit($id)
     {
-        $department = Guardian::find($id);
+        $department = User::find($id);
         return view('admin.pages.Organization.Department.editDepartment', compact('department'));
     }
 

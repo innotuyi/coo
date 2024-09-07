@@ -14,6 +14,7 @@ class Guardian extends Model
         'phone',
         'idcard',
         'district',
-        'sector'
+        'sector',
+        'guardian_image',
     ];
 }

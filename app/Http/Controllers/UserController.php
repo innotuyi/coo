@@ -95,7 +95,8 @@ class UserController extends Controller
             'idcard' => 'required|min:16|max:16',
             'district' => 'required|string',
             'sector' => 'required|string',
-            'user_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'user_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'user_relationship' => 'required|string'
         ]);
 
         if ($validate->fails()) {
@@ -117,8 +118,8 @@ class UserController extends Controller
         // Insert user data using raw SQL
         // Insert user data using raw SQL
         DB::insert('
-INSERT INTO users (name, role, guardID, phone, idcard, district, sector, email, password, user_image, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+INSERT INTO users (name, role, guardID, phone, idcard, district, sector, email, password, user_image,user_relationship, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(), NOW())', [
             $request->name,
             $request->role,
             $request->guardID,
@@ -128,7 +129,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
             $request->sector,
             $request->email,
             Hash::make($request->password),  // Securely hash the password
-            $fileName // The user image filename
+            $fileName, // The user image filename
+            $request->user_relationship,
+
         ]);
 
         notify()->success('User created successfully.');
@@ -170,47 +173,60 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
 
     public function userEdit($id)
     {
-        $user = User::find($id);
-        $employee = Employee::find($id);
-        return view('admin.pages.Users.editUser', compact('user', 'employee'));
-    }
+        // $user = User::find($id);
+        // return view('admin.pages.Users.editUser', compact('user'));
 
+        $department = User::find($id);
+        return view('admin.pages.Organization.Department.editDepartment', compact('department'));
+    }
     public function userUpdate(Request $request, $id)
     {
+        // Validate the request
+        // $request->validate([
+        //     'name' => 'required|string|max:255',
+        //     'guardID' => 'nullable|exists:guardians,id',
+        //     'phone' => 'required|min:10|max:10',
+        //     'idcard' => 'required|min:16|max:16',
+        //     'district' => 'required|string',
+        //     'sector' => 'required|string',
+        //     'email' => 'required|email|unique:users,email,' . $id,
+        //     'user_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        //     'password' => 'nullable|min:6',
+        // ]);
+    
+        // Find the user
         $user = User::find($id);
-
+    
         if ($user) {
-            $fileName = $user->image;
+            // Handle file upload if it exists
+            $fileName = $user->user_image; // Default to existing image
             if ($request->hasFile('user_image')) {
                 $file = $request->file('user_image');
                 $fileName = date('Ymdhis') . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('/uploads', $fileName);
+                $file->storeAs('uploads', $fileName, 'public');
             }
-
+    
+            // Update user details
             $user->update([
                 'name' => $request->name,
-                'role' => $request->role,
-                'guardID' => $request->guardID,
                 'phone' => $request->phone,
                 'idcard' => $request->idcard,
                 'district' => $request->district,
                 'sector' => $request->sector,
-                'image' => $fileName,
+                'user_image' => $fileName,
                 'email' => $request->email,
-                'password' => bcrypt($request->password),
+                'password' => $request->filled('password') ? bcrypt($request->password) : $user->password,
             ]);
-
-            // Optionally link to an employee
-            $employee = Employee::where('email', $request->email)->first();
-            if ($employee) {
-                $employee->user_id = $user->id;
-                $employee->save();
-            }
-
+    
             notify()->success('User updated successfully.');
+            return redirect()->route('users.list');
+        } else {
+            // Handle the case where the user is not found
+            notify()->error('User not found.');
             return redirect()->route('users.list');
         }
     }
+    
 
     public function searchUser(Request $request)
     {
@@ -226,4 +242,50 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
 
         return view('admin.pages.Users.searchUserList', compact('users'));
     }
+
+
+
+    public function editProfile()
+{
+    $user = auth()->user();
+    return view('profile.edit', compact('user'));
+}
+
+public function updateProfile(Request $request)
+{
+    // Validate the request
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . auth()->id(),
+        'user_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'password' => 'nullable|min:6',
+    ]);
+
+    // Get the currently authenticated user
+    $user = auth()->user();
+
+    // Handle file upload if it exists
+    $fileName = $user->user_image;
+    if ($request->hasFile('user_image')) {
+        $file = $request->file('user_image');
+        $fileName = date('Ymdhis') . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('uploads', $fileName, 'public');
+    }
+
+    // Update user details
+    $user->update([
+        'name' => $request->name,
+        'email' => $request->email,
+        'user_image' => $fileName,
+        'password' => $request->filled('password') ? bcrypt($request->password) : $user->password,
+    ]);
+
+    notify()->success('Profile updated successfully.');
+    return redirect()->back();
+}
+
+
+
+
+
 }

@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'guardID',
+        'user_relationship',
         'phone',
         'idcard',
         'district',

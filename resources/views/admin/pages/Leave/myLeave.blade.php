@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="shadow p-4 d-flex justify-content-between align-items-center ">
-    <h4 class="text-uppercase">My Leave</h4>
+    <h4 class="text-uppercase">My Loan</h4>
     <div>
         <a href="{{ route('loan.loanForm') }}" class="btn btn-success p-2  px-3 text-lg rounded-pill">Apply  Loan</a>
     </div>
