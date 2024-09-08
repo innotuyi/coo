@@ -90,13 +90,19 @@ Route::post('/punishment/punishmentStore', [OrganizationController::class, 'puni
 Route::get('/punishment/punishmentEdit/{id}', [OrganizationController::class, 'punishmentEdit'])->name('punishment.punishmentEdit');
 Route::put('/punishment/punishmentUpdate/{id}', [OrganizationController::class, 'punishmentUpdate'])->name('punishment.punishmentUpdate');
 Route::get('/punishment/Deletepunishment/{id}', [OrganizationController::class, 'Deletepunishment'])->name('punishment.Deletepunishment');
-
-
-
-
-
-
 Route::get('/Organization/expendutureCategory', [OrganizationController::class, 'expendutureCategory'])->name('organization.expendutureCategory');
+
+Route::get('/Organization/irembo', [OrganizationController::class, 'irembo'])->name('organization.irembo');
+
+Route::get('/Organization/bank', [OrganizationController::class, 'bank'])->name('organization.bank');
+
+Route::get('/Organization/mobile', [OrganizationController::class, 'mobile'])->name('organization.mobile');
+
+
+
+
+
+
 Route::post('/expendutureCategory/expendutureCategoryStore', [OrganizationController::class, 'expendutureCategoryStore'])->name('organization.expendutureCategoryStore');
 Route::get('/expendutureCategory/expendutureCategoryEdit/{id}', [OrganizationController::class, 'expendutureCategoryEdit'])->name('organization.expendutureCategoryEdit');
 Route::put('/expendutureCategory/expendutureCategoryUpdate/{id}', [OrganizationController::class, 'expendutureCategoryUpdate'])->name('organization.expendutureCategoryUpdate');

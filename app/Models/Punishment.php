@@ -12,6 +12,8 @@ class Punishment extends Model
     protected $fillable = [
         'userID',
         'description',
-        'charges'
+        'charges',
+        'type',
+        'punishimentDate'
     ];
 }

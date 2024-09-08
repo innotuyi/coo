@@ -67,12 +67,12 @@
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
                                         <td>{{ $item->name }}</td>
-                                        <td>
+                                        {{-- <td>
                                             <a class="btn btn-success rounded-pill fw-bold text-white"
                                                 href="{{ route('organization.expendutureCategoryEdit', $item->id) }}">Edit</a>
                                             <a class="btn btn-danger rounded-pill fw-bold text-white"
                                                 href="{{ route('organization.expendutureCategoryDelete', $item->id) }}">Delete</a>
-                                        </td>
+                                        </td> --}}
                                     </tr>
                                 @endforeach
                             </tbody>

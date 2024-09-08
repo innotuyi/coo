@@ -160,8 +160,64 @@
         </li>
         @endif
 
+
+
+           {{-- Manage Expenditure --}}
+           @if (auth()->user()->role === 'admin')
+           <li class="sidebar-list-item py-2">
+               <a class="sidebar-link text-muted" href="#" data-bs-target="#service" role="button" aria-expanded="false" data-bs-toggle="collapse">
+                   <i class="fa-solid fa-wallet me-2 text-info"></i>
+                   <span class="sidebar-link-title fs-6">Services</span></a>
+               <ul class="sidebar-menu list-unstyled collapse" id="service">
+                   <li class="sidebar-list-item py-2 fs-6">
+                       <a class="sidebar-link text-muted ms-4" href="{{ route('organization.irembo') }}">
+                           <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Irembo
+                       </a>
+                   </li>
+                   <li class="sidebar-list-item py-2 fs-6">
+                    <a class="sidebar-link text-muted ms-4" href="{{ route('organization.bank') }}">
+                        <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Bank
+                    </a>
+
+                    <li class="sidebar-list-item py-2 fs-6">
+                        <a class="sidebar-link text-muted ms-4" href="{{ route('organization.mobile') }}">
+                            <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>MOMO/AIRTEL
+                        </a>
+                </li>
+                {{-- <li class="sidebar-list-item py-2 fs-6">
+                    <a class="sidebar-link text-muted ms-4" href="{{ route('organization.expendutureCategory') }}">
+                        <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Category
+                    </a>
+                </li> --}}
+               </ul>
+           </li>
+           @endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         {{-- Manage Agents --}}
-        <li class="sidebar-list-item py-2">
+        {{-- <li class="sidebar-list-item py-2">
             <a class="sidebar-link text-muted" href="#" data-bs-target="#agent" role="button" aria-expanded="false" data-bs-toggle="collapse">
                 <i class="fa-solid fa-handshake me-2 text-info"></i>
                 <span class="sidebar-link-title fs-6">Manage Agents</span></a>
@@ -177,7 +233,7 @@
                     </a>
                 </li>
             </ul>
-        </li>
+        </li> --}}
     </ul>
     <hr class="mb-0">
 </div>

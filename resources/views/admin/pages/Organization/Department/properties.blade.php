@@ -24,34 +24,44 @@
         </div>
         <div class="d-flex gap-5 justify-content-center align-content-center ">
 
-            {{-- Department Form start --}}
+            {{-- Property Form start --}}
             <div class="text-left w-30 ">
                 <div class="card mb-4">
                     <div class="card-header py-3">
-                        <h6 class="text-uppercase">Add Property</h>
+                        <h6 class="text-uppercase">Add Property</h6>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('property.propertyStore') }}" method="post">
+                        <form action="{{ route('property.propertyStore') }}" method="post" enctype="multipart/form-data">
                             @csrf
                             <div class="row mb-4">
-                                <div class=" col">
-                                    <div class="col">
-                                        <div class="form-outline">
-                                            <label class="form-label mt-2" for="form11Example1">Names</label>
-                                            <input placeholder="Enter Name" class="form-control" name="name"
-                                                id="" required>
-                                        </div>
-                                        <div class="form-outline">
-                                            <label class="form-label mt-2" for="form11Example1">Location</label>
-                                            <input placeholder="Enter Location" class="form-control" name="location"
-                                                id="" required>
-                                        </div>
-                                        
-                                        
-                                        
-                                        
-             
-
+                                <div class="col">
+                                    <div class="form-outline">
+                                        <label class="form-label mt-2" for="name">Name</label>
+                                        <input placeholder="Enter Name" class="form-control" name="name" id="name" required>
+                                    </div>
+                                    <div class="form-outline">
+                                        <label class="form-label mt-2" for="location">Location</label>
+                                        <input placeholder="Enter Location" class="form-control" name="location" id="location">
+                                    </div>
+                                    {{-- <div class="form-outline">
+                                        <label class="form-label mt-2" for="property_file">Property File</label>
+                                        <input type="file" class="form-control" name="property_file" id="property_file" accept=".jpg,.jpeg,.png,.pdf">
+                                    </div> --}}
+                                    <div class="form-outline">
+                                        <label class="form-label mt-2" for="property_value">Property Value</label>
+                                        <input type="number" class="form-control" name="property_value" id="property_value" required>
+                                    </div>
+                                    <div class="form-outline">
+                                        <label class="form-label mt-2" for="property_attachment">Property Attachment</label>
+                                        <input type="file" class="form-control" name="property_attachment" id="property_attachment" accept=".jpg,.jpeg,.png,.pdf">
+                                    </div>
+                                    <div class="form-outline">
+                                        <label class="form-label mt-2" for="property_date">Property Date</label>
+                                        <input type="date" class="form-control" name="property_date" id="property_date" required>
+                                    </div>
+                                    <div class="form-outline">
+                                        <label class="form-label mt-2" for="location">Comment</label>
+                                        <input placeholder="" class="form-control" name="comment" id="location">
                                     </div>
                                 </div>
                             </div>
@@ -63,7 +73,7 @@
                 </div>
             </div>
 
-            {{-- Department Table start --}}
+            {{-- Property Table start --}}
             <div class="w-75 card">
                 <div>
                     <table class="table align-middle mb-4 text-center bg-white">
@@ -72,22 +82,39 @@
                                 <th>NO</th>
                                 <th>Name</th>
                                 <th>Location</th>
+                                <th>Value</th>
+                                {{-- <th>File</th> --}}
+                                <th>Attachment</th>
+                                <th>Date</th>
+                                <th>comment</th>
+
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($departments as $key => $item)
                             <tr>
-                                <td>{{ $item->id}}</td>
-                                <td>{{ $item->name}}</td>
-                                <td>{{ $item->location}}</td>
+                                <td>{{ $item->id }}</td>
+                                <td>{{ $item->name }}</td>
+                                <td>{{ $item->location }}</td>
+                                <td>{{ $item->property_value }}</td>
 
+                                {{-- <td>
+                                    @if($item->property_file)
+                                        <a href="{{ asset('storage/'.$item->property_file) }}" target="_blank">View File</a>
+                                    @endif
+                                </td> --}}
+                                <td>
+                                    @if($item->property_attachment)
+                                        <a href="{{ url('storage/'.$item->property_attachment) }}" target="_blank">View Attachment</a>
+                                    @endif
+                                </td>
+                                <td>{{ $item->property_date }}</td>
+                                <td>{{ $item->comment }}</td>
 
                                 <td>
-                                    <a class="btn btn-success rounded-pill fw-bold text-white"
-                                        href="{{ route('property.propertyEdit', $item->id) }}">Edit</a>
-                                    <a class="btn btn-danger rounded-pill fw-bold text-white"
-                                        href="{{ route('property.deleteProperty', $item->id) }}">Delete</a>
+                                    <a class="btn btn-success rounded-pill fw-bold text-white" href="{{ route('property.propertyEdit', $item->id) }}">Edit</a>
+                                    {{-- <a class="btn btn-danger rounded-pill fw-bold text-white" href="{{ route('property.deleteProperty', $item->id) }}">Delete</a> --}}
                                 </td>
                             </tr>
                             @endforeach

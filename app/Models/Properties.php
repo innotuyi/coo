@@ -13,5 +13,8 @@ class Properties extends Model
     protected $fillable = [
         'name',
         'location',
+        'property_attachment',
+        'property_date',
+        'comment',
     ];
 }

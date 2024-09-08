@@ -55,9 +55,22 @@
                                                 @endforeach
                                             </select>
                                         </div>
+
                                         <div class="form-outline">
-                                            <label class="form-label mt-2" for="form11Example1">Description</label>
-                                            <input placeholder="Enter description" class="form-control" name="description"
+                                            <label class="form-label mt-2" for="form11Example1">Punishment Type</label>
+                                            <input  class="form-control" name="description"
+                                                id="" required>
+                                        </div>
+
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Punishment Reason</label>
+                                            <input  class="form-control" name="type"
+                                                id="" required>
+                                        </div>
+
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Punishment Date</label>
+                                            <input type="date" class="form-control" name='punishimentDate' 
                                                 id="" required>
                                         </div>
 
@@ -86,11 +99,13 @@
                             <tr>
                                 <th>NO</th>
                                 <th>Member Name</th>
-                                <th>Description</th>
-                                <th>
-                                    charges
-                                </th>
-                                <th>Actions</th>
+                                <th>Reason</th>
+                                <th>Type</th>
+                                <th>Charges</th>
+                                <th>Date</th>
+
+
+                                {{-- <th>Actions</th> --}}
                             </tr>
                         </thead>
                         <tbody>
@@ -99,15 +114,18 @@
                                 <td>{{ $item->id }}</td>
                                 <td>{{ $item->member_name }}</td>
                                 <td>{{ $item->description }}</td>
+                                <td>{{ $item->type }}</td>
                                 <td>{{ $item->charges }}</td>
+                                <td>{{ $item->punishimentDate }}</td>
 
 
-                                <td>
+
+                                {{-- <td>
                                     <a class="btn btn-success rounded-pill fw-bold text-white"
                                         href="{{ route('punishment.punishmentEdit', $item->id) }}">Edit</a>
                                     <a class="btn btn-danger rounded-pill fw-bold text-white"
                                         href="{{ route('punishment.Deletepunishment', $item->id) }}">Delete</a>
-                                </td>
+                                </td> --}}
                             </tr>
                             @endforeach
                         </tbody>

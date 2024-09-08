@@ -56,10 +56,10 @@ class OrganizationController extends Controller
             'm.district as member_district',
             'm.sector as member_sector'
         )
-        ->join('shares', 'shares.userID', '=', 'm.id')  // Join the 'shares' table on 'userID'
-        ->from('users as m') // Set alias for the 'users' table as 'm'
-        ->distinct() // Ensure distinct records are returned
-        ->get();
+            ->join('shares', 'shares.userID', '=', 'm.id')  // Join the 'shares' table on 'userID'
+            ->from('users as m') // Set alias for the 'users' table as 'm'
+            ->distinct() // Ensure distinct records are returned
+            ->get();
 
 
 
@@ -148,7 +148,7 @@ class OrganizationController extends Controller
         return redirect()->back();
     }
 
-    
+
 
 
 
@@ -210,26 +210,26 @@ class OrganizationController extends Controller
     //             'recipient_userID' => 'required|exists:users,id',
     //             'amount' => 'required|numeric|min:0',
     //         ]);
-    
+
     //         // Find the share record
     //         $share = Share::find($shareId);
-    
+
     //         if (!$share) {
     //             return redirect()->back()->withErrors('Share record not found.');
     //         }
-    
+
     //         // Ensure the user has enough shares to transfer
     //         if ($share->amount < $request->amount) {
     //             return redirect()->back()->withErrors('Insufficient shares to transfer.');
     //         }
-    
+
     //         // Transfer shares
     //         $share->update([
     //             'recipient_userID' => $request->recipient_userID,
     //             'transfer_date' => now(),
     //             'amount' => $share->amount - $request->amount, // Reduce the amount of shares in the current record
     //         ]);
-    
+
     //         // Create a new share record for the recipient
     //         Share::create([
     //             'userID' => $request->recipient_userID,
@@ -238,10 +238,10 @@ class OrganizationController extends Controller
     //             'interest_rate' => $share->interest_rate, // Use the existing interest rate
     //             'total_share' => $share->total_share, // Use the existing total share
     //         ]);
-    
+
     //         // Success message
     //         return redirect()->route('organization.sharex')->with('success', 'Shares transferred successfully.');
-    
+
     //     } catch (\Exception $e) {
     //         // Catch any unexpected errors
     //         return redirect()->back()->withErrors('An error occurred: ' . $e->getMessage());
@@ -253,32 +253,32 @@ class OrganizationController extends Controller
     // {
     //     // Find the share to be transferred
     //     $share = Share::find($shareId);
-        
+
     //     if (!$share) {
     //         return redirect()->back()->with('error', 'Share not found.');
     //     }
-    
+
     //     // Validate the incoming request
     //     $request->validate([
     //         'recipient_userID' => 'required|exists:users,id',
     //         'amount' => 'required|numeric|min:0',
     //     ]);
-    
+
     //     // // Check if the user has enough shares
     //     // if ($request->amount > $share->total_share) {
     //     //     return redirect()->back()->with('error', 'Insufficient shares to transfer.');
     //     // }
-    
+
     //     // // Proceed with transferring the shares
     //     // // Assuming you deduct the shares from the current user and transfer them to the recipient
     //     // $share->total_share -= $request->amount; // Deduct from current user
     //     // $share->save();
-    
+
     //     // Update or create shares for the recipient
     //     $recipientShare = Share::firstOrNew(['userID' => $request->recipient_userID]);
     //     $recipientShare->total_share += $request->amount; // Add to recipient
     //     $recipientShare->save();
-    
+
     //     return redirect()->back()->with('success', 'Shares transferred successfully.');
     // }
 
@@ -289,45 +289,44 @@ class OrganizationController extends Controller
             $request->validate([
                 'recipient_userID' => 'required|exists:users,id',
             ]);
-    
+
             // Retrieve the share record to be transferred
             $share = DB::table('shares')->where('id', $shareId)->first();
-    
+
             if (!$share) {
                 return redirect()->back()->withErrors('Share record not found.');
             }
-    
+
             // Transfer the share by creating a new record for the recipient
             DB::table('shares')->insert([
                 'userID' => $request->recipient_userID,
                 'amount' => $share->amount, // Transfer the entire amount
                 'amount_increase' => $share->amount_increase ?? null, // Maintain the amount increase
                 'interest_rate' => $share->interest_rate ?? null, // Set interest rate (0 if null)
-                'total_share' =>  $share->amount +  $share->amount_increase +$share->interest_rate, // Maintain the total shares
+                'total_share' =>  $share->amount +  $share->amount_increase + $share->interest_rate, // Maintain the total shares
                 'joining_date' => now(), // Set the current date as joining date
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-    
-            // Optionally, you can delete the original share record if needed
-               // Update the status of the original share record
-        DB::table('shares')->where('id', $shareId)->update([
-            'status' => 'transferred', // Mark the share as transferred
-            'updated_at' => now(), // Update the timestamp
-        ]);
 
-    
+            // Optionally, you can delete the original share record if needed
+            // Update the status of the original share record
+            DB::table('shares')->where('id', $shareId)->update([
+                'status' => 'transferred', // Mark the share as transferred
+                'updated_at' => now(), // Update the timestamp
+            ]);
+
+
             // Success message
             return redirect()->route('organization.share')->with('success', 'Shares transferred successfully.');
-            
         } catch (\Exception $e) {
             // Catch any unexpected errors
             return redirect()->back()->withErrors('An error occurred: ' . $e->getMessage());
         }
     }
-    
 
-    
+
+
 
 
 
@@ -340,29 +339,58 @@ class OrganizationController extends Controller
 
     public function properties()
     {
-        $departments = Properties::all();
+        // Use raw SQL to fetch all properties
+        $departments = DB::select('SELECT * FROM properties');
+    
         return view('admin.pages.Organization.Department.properties', compact('departments'));
     }
 
     public function propertyStore(Request $request)
     {
-
+        // Validate the input
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'location' => 'nullable|string|max:255',
+            'comment' => 'nullable|string|max:255',
+            'property_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'property_value' => 'required|numeric',
+            'property_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'property_date' => 'required|date',
         ]);
-
+    
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
-
-
-        Properties::create($request->all());
-
-
-        return redirect()->route('organization.properties');
+    
+        // Handle file uploads
+        $fileName = $request->hasFile('property_file') 
+            ? $request->file('property_file')->storeAs('uploads', date('Ymdhis') . '.' . $request->file('property_file')->getClientOriginalExtension(), 'public') 
+            : null;
+    
+        $attachmentName = $request->hasFile('property_attachment') 
+            ? $request->file('property_attachment')->storeAs('uploads', date('Ymdhis') . '.' . $request->file('property_attachment')->getClientOriginalExtension(), 'public') 
+            : null;
+    
+        // Convert the property_date to a readable format using Carbon
+        $propertyDate = Carbon::parse($request->property_date)->toDateString();
+    
+        // Insert the property record using raw SQL
+        DB::insert('
+            INSERT INTO properties (name, location, comment, property_file, property_value, property_attachment, property_date, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->name,
+            $request->location,
+            $request->comment,
+            $fileName,
+            $request->property_value,
+            $attachmentName,
+            $propertyDate
+        ]);
+    
+        return redirect()->route('organization.properties')
+            ->with('success', 'Property created successfully.');
     }
 
     public function propertyEdit($id)
@@ -379,41 +407,37 @@ class OrganizationController extends Controller
     }
 
 
-    public function propertyUpdate(Request $request, $id)
-    {
+  
+public function propertyUpdate(Request $request, $id)
+{
+    // Validate the incoming request data
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'location' => 'nullable|string|max:255',
+    ]);
 
-        // Validate the incoming request data
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'location' => 'nullable|string|max:255',
-        ]);
-
-
-
-        // Check if validation fails
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)      // Return with validation errors
-                ->withInput();                // Return with old input data
-        }
-        // Find the guardian by ID
-        $property = Properties::findOrFail($id);
-
-
-
-        // Update the guardian record
-        $property->update([
-            'name' => $request->name,
-            'location' =>  $request->location,
-
-        ]);
-
-        notify()->success('Updated successfully.');
-
-        return redirect()->route('organization.properties');
+    // Check if validation fails
+    if ($validator->fails()) {
+        return redirect()->back()
+            ->withErrors($validator)      // Return with validation errors
+            ->withInput();                // Return with old input data
     }
 
+    // Update the property record using raw SQL
+    DB::update('
+        UPDATE properties 
+        SET name = ?, location = ?, updated_at = NOW()
+        WHERE id = ?', [
+        $request->name,
+        $request->location,
+        $id
+    ]);
+
+    // Notify the user about the success
+    notify()->success('Property updated successfully.');
+
+    return redirect()->route('organization.properties');
+}
 
 
     public function deleteProperty($id)
@@ -430,69 +454,98 @@ class OrganizationController extends Controller
 
     public function meeting()
     {
-        $departments = Meeting::all();
-        return view('admin.pages.Organization.Department.meeting', compact('departments'));
+         // Fetch all meetings using raw SQL
+    $meetings = DB::select('SELECT * FROM meetings');
+
+    return view('admin.pages.Organization.Department.meeting', compact('meetings'));
     }
 
 
 
     public function meetingStore(Request $request)
     {
-
-
-        $validate = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'topic' => 'required|string|max:255',
             'descritption' => 'required|string|max:500',
+            'meeting_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
-
-
-        if ($validate->fails()) {
+    
+        if ($validator->fails()) {
             return redirect()->back()
-                ->withErrors($validate)
+                ->withErrors($validator)
                 ->withInput();
         }
-
-        Meeting::create($request->all());
-
-
-        return redirect()->route('organization.meeting');
+    
+        // Handle file upload if exists
+        $attachmentName = null;
+        if ($request->hasFile('meeting_attachment')) {
+            $attachment = $request->file('meeting_attachment');
+            $attachmentName = date('YmdHis') . '.' . $attachment->getClientOriginalExtension();
+            $attachment->storeAs('uploads', $attachmentName, 'public');
+        }
+    
+        // Insert data using raw SQL
+        DB::insert('
+            INSERT INTO meetings (topic, descritption, meeting_attachment, created_at, updated_at)
+            VALUES (?, ?, ?, NOW(), NOW())', [
+            $request->topic,
+            $request->descritption,
+            $attachmentName
+        ]);
+    
+        return redirect()->route('organization.meeting')
+            ->with('success', 'Meeting created successfully');
     }
-
+    
     public function meetingEdit(Request $request, $id)
     {
-
-        $department = Meeting::find($id);
-
-
-
+        // Fetch the meeting using raw SQL
+        $department = DB::select('SELECT * FROM meetings WHERE id = ?', [$id]);
+    
+        // Check if the meeting exists
         if ($department) {
+            // Since DB::select returns an array, get the first result
+            $department = $department[0];
+    
             return view('admin.pages.Organization.Department.meetingEdit', compact('department'));
         } else {
-            return redirect()->back()->with('error', 'meeting not found.');
+            return redirect()->back()->with('error', 'Meeting not found.');
         }
     }
 
 
     public function meetingUpdate(Request $request, $id)
     {
-
+        // Validate the incoming request data
         $validate = Validator::make($request->all(), [
             'topic' => 'required|string|max:255',
-            'descritption' => 'required|string|max:500',
+            'description' => 'required|string|max:500',
         ]);
-
+    
+        // Check if validation fails
         if ($validate->fails()) {
             return redirect()->back()
                 ->withErrors($validate)
                 ->withInput();
         }
-
-        $meeting = Meeting::findOrFail($id);
-
-        $meeting->update($request->all());;
-
+    
+        // Get the current timestamp using Carbon
+        $updatedAt = Carbon::now();
+    
+        // Update the meeting using raw SQL
+        DB::update('
+            UPDATE meetings
+            SET topic = ?, description = ?, updated_at = ?
+            WHERE id = ?
+        ', [
+            $request->input('topic'),
+            $request->input('description'),
+            $updatedAt,
+            $id
+        ]);
+    
         return redirect()->route('organization.meeting')
-            ->with('success', 'Meeting deleted successfully.');
+            ->with('success', 'Meeting updated successfully.');
     }
 
 
@@ -520,26 +573,44 @@ class OrganizationController extends Controller
     }
 
 
+   
     public function punishmentStore(Request $request)
     {
-
+        // Validate input
         $validate = Validator::make($request->all(), [
             'userID' => 'required|exists:users,id',
             'description' => 'required|string|max:255',
             'charges' => 'required|numeric|min:0',
+            'type' => 'nullable|string|max:255', // Optional punishment type
+            'punishimentDate' => 'nullable|date',  // Optional punishment date
         ]);
-
+    
         if ($validate->fails()) {
             return redirect()->back()
                 ->withErrors($validate)
                 ->withInput();
         }
-
-        Punishment::create($request->all());
-
+    
+        // Convert the punishment date to a readable format using Carbon
+        $punishmentDate = $request->punishimentDate 
+            ? Carbon::parse($request->punishimentDate)->format('Y-m-d') 
+            : null;
+    
+        // Insert data using raw SQL
+        DB::insert('
+            INSERT INTO punishments (userID, description, charges, type, punishimentDate, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->userID,
+            $request->description,
+            $request->charges,
+            $request->type,
+            $punishmentDate
+        ]);
+    
         return redirect()->route('organization.punishment')
-            ->with('success', 'punishment created successfully.');
+            ->with('success', 'Punishment created successfully.');
     }
+    
 
 
     public function punishmentEdit($id)
@@ -595,6 +666,69 @@ class OrganizationController extends Controller
 
         return view('admin.pages.Organization.Department.expendutureCategory', compact('departments'));
     }
+
+
+    public function irembo()
+    {
+
+
+
+        $departments = ExpenditureCategory::all();
+
+        $expenditures = Expenditure::select(
+            'expenditures.*',
+            'expenditure_categories.name as category_name'
+        )
+            ->join('expenditure_categories', 'expenditures.category_id', '=', 'expenditure_categories.id')
+            ->where('expenditure_categories.name', '=', 'irembo')
+            ->get();
+
+        return view('admin.pages.Organization.Department.irembo', compact('departments', 'expenditures'));
+    }
+
+
+
+    public function bank()
+    {
+
+
+
+        $departments = ExpenditureCategory::all();
+
+        $expenditures = Expenditure::select(
+            'expenditures.*',
+            'expenditure_categories.name as category_name'
+        )
+            ->join('expenditure_categories', 'expenditures.category_id', '=', 'expenditure_categories.id')
+            ->where('expenditure_categories.name', '=', 'bank')
+            ->get();
+
+        return view('admin.pages.Organization.Department.bank', compact('departments', 'expenditures'));
+    }
+
+
+    public function mobile()
+    {
+
+
+
+        $departments = ExpenditureCategory::all();
+
+        $expenditures = Expenditure::select(
+            'expenditures.*',
+            'expenditure_categories.name as category_name'
+        )
+            ->join('expenditure_categories', 'expenditures.category_id', '=', 'expenditure_categories.id')
+            ->where('expenditure_categories.name', '=', 'mobile')
+            ->get();
+
+        return view('admin.pages.Organization.Department.bank', compact('departments', 'expenditures'));
+    }
+
+
+
+
+
     public function expendutureCategoryStore(Request $request)
     {
 
@@ -913,45 +1047,47 @@ class OrganizationController extends Controller
         $guardians = Guardian::all();
         return view('admin.pages.Organization.Department.department', compact('guardians'));
     }
-    public function store(Request $request)
-    {
-        // Validate the input
-        $validate = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'phone' => 'required|digits:10',
-            'idcard' => 'required|digits:16|unique:guardians,idcard',
-            'district' => 'required|string|max:255',
-            'sector' => 'required|string|max:255',
-            'guardian_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate guardian image
-        ]);
-    
-        if ($validate->fails()) {
-            // notify()->error($validate->getMessageBag());
-            return redirect()->back()->withErrors($validate);
-        }
-    
-        // Handle the file upload if it exists
-        $fileName = null;
-        if ($request->hasFile('guardian_image')) {
-            $file = $request->file('guardian_image');
-            $fileName = time() . '.' . $file->getClientOriginalExtension(); // Create a unique file name
-            $file->storeAs('uploads', $fileName, 'public'); // Store in storage/app/public/uploads
-        }
-    
-        // Insert guardian data into the database
-        DB::insert('INSERT INTO guardians (name, phone, idcard, district, sector, guardian_image, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())', [
-            $request->name,
-            $request->phone,
-            $request->idcard,
-            $request->district,
-            $request->sector,
-            $fileName
-        ]);
-    
-        notify()->success('New Guardian created successfully.');
-        return redirect()->back();
+ 
+public function store(Request $request)
+{
+    // Validate the input
+    $validate = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'phone' => 'required|digits:10',
+        'idcard' => 'required|digits:16|unique:guardians,idcard',
+        'district' => 'required|string|max:255',
+        'sector' => 'required|string|max:255',
+        'guardian_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate guardian image
+    ]);
+
+    if ($validate->fails()) {
+        return redirect()->back()->withErrors($validate)->withInput();
     }
-    
+
+    // Handle the file upload if it exists
+    $fileName = null;
+    if ($request->hasFile('guardian_image')) {
+        $file = $request->file('guardian_image');
+        $fileName = time() . '.' . $file->getClientOriginalExtension(); // Create a unique file name
+        $file->storeAs('uploads', $fileName, 'public'); // Store in storage/app/public/uploads
+    }
+
+    // Insert guardian data using raw SQL
+    DB::insert('
+        INSERT INTO guardians (name, phone, idcard, district, sector, guardian_image, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+    ', [
+        $request->name,
+        $request->phone,
+        $request->idcard,
+        $request->district,
+        $request->sector,
+        $fileName
+    ]);
+
+    notify()->success('New Guardian created successfully.');
+    return redirect()->back();
+}
     public function memberStore(Request $request)
     {
 

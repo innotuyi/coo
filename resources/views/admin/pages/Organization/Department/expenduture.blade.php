@@ -103,7 +103,7 @@
                                 <th>Amount</th>
                                 <th>Date</th>
                                 <th>Category</th>
-                                <th>Actions</th>
+                                {{-- <th>Actions</th> --}}
                             </tr>
                         </thead>
                         <tbody>
@@ -115,12 +115,12 @@
                                 <td>{{ $item->date }}</td>
                                 <td>{{ $item->category_name }}</td>
 
-                                <td>
+                                {{-- <td>
                                     <a class="btn btn-success rounded-pill fw-bold text-white"
                                         href="{{ route('expenduture.expendutureEdit', $item->id) }}">Edit</a>
                                     <a class="btn btn-danger rounded-pill fw-bold text-white"
                                         href="{{ route('expenduture.expendutureDelete', $item->id) }}">Delete</a>
-                                </td>
+                                </td> --}}
                             </tr>
                             @endforeach
                         </tbody>

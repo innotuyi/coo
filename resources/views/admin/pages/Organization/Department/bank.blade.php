@@ -2,19 +2,20 @@
 
 @section('content')
 <div class="shadow p-4 d-flex justify-content-between align-items-center ">
-    <h4 class="text-uppercase">Meeting report</h4>
+    <h4 class="text-uppercase">Bank</h4>
 </div>
 <div class="container my-5 py-5">
 
+
     @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
     <!--Section: Form Design Block-->
     <section>
@@ -38,30 +39,47 @@
             <div class="text-left w-30 ">
                 <div class="card mb-4">
                     <div class="card-header py-3">
-                        <h6 class="text-uppercase">Meeting Report</h>
+                        <h6 class="text-uppercase">Bank Service</h>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('meeting.meetingStore') }}" method="post" enctype="multipart/form-data">
+                        <form action="{{ route('expenduture.expendutureStore') }}" method="post">
                             @csrf
                             <div class="row mb-4">
                                 <div class=" col">
                                     <div class="col">
                                         <div class="form-outline">
-                                            <label class="form-label mt-2" for="form11Example1">Topic</label>
-                                            <input placeholder="Enter Name" class="form-control" name="topic"
-                                                id="" required>
-                                        </div>
-                                        <div class="form-outline">
-                                            <label class="form-label mt-2" for="form11Example1">Description</label>
-                                            <input placeholder="Enter Location" class="form-control" name="descritption"
-                                                id="" required>
-                                        </div>
-                                        <div class="form-outline">
-                                            <label class="form-label mt-2" for="form11Example1">Meeting Attachment</label>
-                                            <input type="file" class="form-control" name="meeting_attachment"
-                                                id="" required>
+                                            <label class="form-label" for="memberID">Category</label>
+                                            <select class="form-control" name="category_id">
+                                                @foreach ($departments as $department)
+                                                <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
 
+
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Description</label>
+                                            <input class="form-control" name="description"
+                                                id="" required>
+                                        </div>
+                                        
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1" min=1>Amount</label>
+                                            <input type="number"  class="form-control" name="amount"
+                                                id="" required>
+                                        </div>
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Date</label>
+                                            <input type="date" class="form-control" name="date"
+                                                id="" required>
+                                        </div>
+                                        {{-- <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Employee</label>
+                                            <input type="text" placeholder="Enter phone" class="form-control" name="phone"
+                                                id="" required>
+                                        </div>
+                                         --}}
+             
 
                                     </div>
                                 </div>
@@ -81,30 +99,28 @@
                         <thead class="bg-light">
                             <tr>
                                 <th>NO</th>
-                                <th>Topic</th>
                                 <th>Description</th>
-                                <th>Meeting Attachment</th>
-                                <th>Actions</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                                {{-- <th>Actions</th> --}}
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($departments as $item)
+                            @foreach ($expenditures as  $item)
                             <tr>
                                 <td>{{ $item->id }}</td>
-                                <td>{{ $item->topic}}</td>
-                                <td>{{ $item->descritption}}</td>
-                                <td>
-                                    @if($item->meeting_attachment)
-                                        <a href="{{ url('storage/uploads'.$item->meeting_attachment) }}" target="_blank">View Attachment</a>
-                                    @endif
-                                </td>
+                                <td>{{ $item->description }}</td>
+                                <td>{{ $item->amount }}</td>
+                                <td>{{ $item->date }}</td>
+                                <td>{{ $item->category_name }}</td>
 
-                                <td>
+                                {{-- <td>
                                     <a class="btn btn-success rounded-pill fw-bold text-white"
-                                        href="{{ route('meeting.meetingEdit', $item->id) }}">Edit</a>
+                                        href="{{ route('expenduture.expendutureEdit', $item->id) }}">Edit</a>
                                     <a class="btn btn-danger rounded-pill fw-bold text-white"
-                                        href="{{ route('meeting.deleteMeeting', $item->id) }}">Delete</a>
-                                </td>
+                                        href="{{ route('expenduture.expendutureDelete', $item->id) }}">Delete</a>
+                                </td> --}}
                             </tr>
                             @endforeach
                         </tbody>
