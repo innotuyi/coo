@@ -11,7 +11,9 @@ use App\Models\Loan;
 use App\Models\Member;
 use App\Models\User;
 use Carbon\Carbon;
+use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class LeaveController extends Controller
@@ -27,17 +29,210 @@ class LeaveController extends Controller
     public function LoanList()
     {
 
-        $leaves = Loan::all();
+        $leaves  =  User::select(
+            'loans.*',                // Select all columns from the 'shares' table
+            'm.id as member_id',        // Select and alias the 'id' column from the alias 'm'
+            'm.name as member_name',    // Alias 'name' from the alias 'm'
+            'm.phone as member_phone',  // Alias 'phone' from the alias 'm'
+            'm.idcard as member_idcard',
+            'm.district as member_district',
+            'm.sector as member_sector'
+        )
+            ->join('loans', 'loans.userID', '=', 'm.id')  // Join the 'shares' table on 'userID'
+            ->from('users as m') // Set alias for the 'users' table as 'm'
+            // ->distinct() // Ensure distinct records are returned
+            ->get();
+
+
+
+
+
+        // $leaves = Loan::all();
         return view('admin.pages.Leave.leaveList', compact('leaves'));
     }
 
+    public function paymentHistory() {
+
+        // Fetch payment history information
+    $payments = DB::table('payments as p')
+    ->join('loans as l', 'p.loan_id', '=', 'l.id')
+    ->join('users as u', 'l.userID', '=', 'u.id')
+    ->select(
+        'p.id as payment_id',
+        'p.amount as payment_amount',
+        'p.payment_date',
+        'p.proof_of_payment',
+        'l.id as loan_id',
+        'l.amount as loan_amount',
+        'l.interest_rate',
+        'l.start_date',
+        'l.end_date',
+        'l.status as loan_status',
+        'u.id as user_id',
+        'u.name as user_name',
+        'u.email as user_email'
+    )
+    ->orderBy('p.payment_date', 'desc')
+    ->get();
+
+// Return the results to a view or as JSON
+
+
+
+
+        return view('admin.pages.Leave.paymentHistory', compact('payments'));
+    }
+
+    public function updateRemainingBalance($loanId, $paymentAmount) {
+        // Fetch loan details
+        $loan = DB::table('loans')->where('id', $loanId)->first();
+        
+        if (!$loan) {
+            return null; // Handle loan not found
+        }
+        
+        // Fetch payments and calculate the total amount paid
+        $totalPaid = DB::table('payments')
+                        ->where('loan_id', $loanId)
+                        ->sum('amount');
+    
+        $remainingBalance = $loan->amount + ($loan->amount * ($loan->interest_rate / 100)) - $totalPaid;
+        
+        // Return the remaining balance
+        return $remainingBalance;
+    }
+    
+
+    function calculateMonthlyPayment($amount, $interestRate, $months) {
+        $monthlyRate = $interestRate / 100 / 12;
+        return ($amount * $monthlyRate) / (1 - pow(1 + $monthlyRate, -$months));
+    }
+    
+    function getLoanDetails($loanId) {
+        $userId = auth()->user()->id; // Get the logged-in user's ID
+    
+        // Fetch loan details for the logged-in user with a JOIN on the users table
+        $loan = DB::table('loans')
+            ->join('users', 'loans.userID', '=', 'users.id')
+            ->where('loans.id', $loanId)
+            ->where('users.id', $userId) // Ensure the loan belongs to the logged-in user
+            ->select('loans.*', 'users.name as user_name', 'users.email as user_email')
+            ->first();
+    
+        if (!$loan) {
+            return null; // Handle the case where no loan is found
+        }
+    
+        $now = now();
+        $endDate = new DateTime($loan->end_date);
+        $diff = $endDate->diff($now);
+        $overdueMonths = $diff->y * 12 + $diff->m;
+    
+        // Determine interest rate based on deadline
+        $interestRate = $overdueMonths > 0 ? 15 : 5;
+        $months = 8; // Fixed period for calculation
+    
+        // Use $this-> to reference the calculateMonthlyPayment method
+        $monthlyPayment = $this->calculateMonthlyPayment($loan->amount, $interestRate, $months);
+    
+        // Update remaining balance
+        $remainingBalance = $this->updateRemainingBalance($loanId, 0); // 0 as no payment in this context
+    
+        return view('admin.pages.Leave.myleaveDetails', [
+            'loan_amount' => $loan->amount,
+            'monthly_payment' => $monthlyPayment,
+            'interest_rate' => $interestRate,
+            'remaining_balance' => $remainingBalance,
+            'user_name' => $loan->user_name,
+            'user_email' => $loan->user_email,
+            'loan_start_date' => $loan->start_date,
+            'loan_end_date' => $loan->end_date,
+            'loan_status' => $loan->status,
+            'loanID' => $loanId,
+        ]);
+    }
+    
+
+
+    public function payment(Request $request, int $id) {
+        try {
+            // Validate the input
+            $validate = Validator::make($request->all(), [
+                'amount' => 'required|numeric|min:0',
+                'payment_date' => 'required|date',
+                'proof_of_payment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Accept image or PDF
+            ]);
+    
+            if ($validate->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validate->errors(),
+                ], 422); // Unprocessable Entity status code
+            }
+    
+            // Handle file upload (if a file was uploaded)
+            $fileName = null;
+            if ($request->hasFile('proof_of_payment')) {
+                $file = $request->file('proof_of_payment');
+                $fileName = date('Ymdhis') . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('uploads', $fileName, 'public');
+            }
+    
+            // Insert the payment record using raw SQL
+            DB::insert('
+                INSERT INTO payments (loan_id, amount, payment_date, proof_of_payment, created_at, updated_at)
+                VALUES (?, ?, ?, ?, NOW(), NOW())', [
+                $id,
+                $request->amount,
+                $request->payment_date,
+                $fileName, // Save the path of the uploaded file
+            ]);
+    
+            // Update remaining balance
+            $remainingBalance = $this->updateRemainingBalance($id, $request->amount);
+            
+            // Return success response
+            return redirect()->back()->with('success', 'Payment recorded successfully. Remaining balance: ' . $remainingBalance);
+    
+        } catch (\Exception $e) {
+            // Catching exceptions and returning an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing the payment.',
+                'error' => $e->getMessage(),
+            ], 500); // Internal Server Error status code
+        }
+    }
+    
+    
+    
 
     public function myLeave()
     {
 
-        $userId = auth()->id(); // Or auth()->user()->id
+        // $userId = auth()->id(); // Or auth()->user()->id
 
-        $leaves = Loan::where('userID', $userId)->get();
+
+        // $leaves = Loan::where('userID', $userId)->get();
+
+
+
+        // return view('admin.pages.Leave.myLeave', compact('leaves'));
+
+
+        // Corrected method to retrieve the authenticated user's ID
+        $userId = auth()->user()->id;
+
+        // Raw SQL query with a JOIN between users and loans
+        $leaves = DB::select("
+    SELECT loans.id, users.name, users.email, loans.amount, loans.interest_rate, loans.start_date, loans.end_date, loans.status
+    FROM users
+    INNER JOIN loans ON users.id = loans.userID
+    WHERE users.id = ?
+", [$userId]);
+
+
+        // Pass the results to the view
         return view('admin.pages.Leave.myLeave', compact('leaves'));
     }
 

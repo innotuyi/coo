@@ -49,6 +49,9 @@ Route::post('/Organization/department/member/store', [OrganizationController::cl
 
 Route::get('/Organization/share', [OrganizationController::class, 'share'])->name('organization.share');
 
+Route::put('/shares/transfer/{id}', [OrganizationController::class, 'transferShares'])->name('shares.transfer');
+
+
 Route::post('/Organization/shareStore', [OrganizationController::class, 'shareStore'])->name('organization.shareStore');
 
 Route::get('/share/edit/{id}', [OrganizationController::class, 'shareEdit'])->name('share.edit');
@@ -180,6 +183,9 @@ Route::get('/Designation/Search/Designation', [DesignationController::class, 'se
 
 // Leave
 Route::get('/Loan/loanStatus', [LeaveController::class, 'LoanList'])->name('loan.loanStatus');
+
+Route::get('/Loan/paymentHistory', [LeaveController::class, 'paymentHistory'])->name('loan.paymentHistory');
+
 Route::get('/Leave/allLeaveReport', [LeaveController::class, 'allLeaveReport'])->name('allLeaveReport');
 Route::get('/searchLeaveList', [LeaveController::class, 'searchLeaveList'])->name('searchLeaveList');
 
@@ -219,6 +225,14 @@ Route::get('/contactUs/Message', [HomeController::class, 'message'])->name('mess
 Route::get('/loan/loanForm', [LoanController::class, 'loan'])->name('loan.loanForm');
 Route::post('/Leave/store', [LoanController::class, 'store'])->name('leave.store');
 Route::get('/Leave/myLeave', [LeaveController::class, 'myLeave'])->name('leave.myLeave');
+
+Route::get('/Leave/details/{id}', [LeaveController::class, 'getLoanDetails'])->name('leave.details');
+
+Route::post('/Leave/payment/{id}', [LeaveController::class, 'payment'])->name('payment.store');
+
+
+
+
 Route::get('/Leave/myLeaveReport', [LeaveController::class, 'myLeaveReport'])->name('myLeaveReport');
 Route::get('/searchMyLeave', [LeaveController::class, 'searchMyLeave'])->name('searchMyLeave');
 // user profile

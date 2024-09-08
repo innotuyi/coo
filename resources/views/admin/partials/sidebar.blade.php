@@ -79,6 +79,11 @@
                         <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Loan Request
                     </a>
                 </li>
+                <li class="sidebar-list-item py-2 fs-6">
+                    <a class="sidebar-link text-muted ms-4" href="{{ route('loan.paymentHistory') }}">
+                        <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Payment history
+                    </a>
+                </li>
                 @endif
 
             </ul>

@@ -25,7 +25,7 @@
         <thead class="bg-light">
             <tr>
                 <th>N/0</th>
-                <th>Member ID</th>
+                <th>Member</th>
                 <th>Amount</th>
                 <th>Interest Rate</th>
                 <th>Start Date</th>
@@ -37,7 +37,7 @@
             @foreach ($leaves as $leave)
             <tr>
                 <td>{{ $leave->id }}</td>
-                <td>{{ $leave->userID }}</td>
+                <td>{{ $leave->member_name }}</td>
                 <td>{{ $leave->amount }}</td>
                 <td>{{ $leave->interest_rate }}</td>
                 <td>{{ $leave->start_date }}</td>

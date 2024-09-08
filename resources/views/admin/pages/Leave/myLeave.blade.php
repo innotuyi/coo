@@ -28,7 +28,7 @@
     <table class="table align-middle text-center table-hover  bg-white">
         <thead class="bg-light">
             <tr>
-                <th>Member ID</th>
+                <th>Name</th>
                 <th>Amount</th>
                 <th>Interest Rate</th>
                 <th>Start Date</th>
@@ -39,13 +39,15 @@
         <tbody>
             @foreach ($leaves as $leave)
             <tr>
-                <td>{{ $leave->userID }}</td>
+                <td>{{ $leave->name }}</td>
                 <td>{{ $leave->amount }}</td>
                 <td>{{ $leave->interest_rate }}</td>
                 <td>{{ $leave->start_date }}</td>
                 <td>{{ $leave->end_date }}</td>
-                <td>{{ $leave->status }}</td>
+                {{-- <td>{{ $leave->status }}</td> --}}
                 <td>
+                    <a href="{{ route('leave.details', ['id' => $leave->id]) }}">Details</a>
+
                     @if($leave->status === '1')
                     <span class="text-white fw-bold bg-green rounded-pill p-2">Accepted</span>
                     @elseif($leave->status === '0')

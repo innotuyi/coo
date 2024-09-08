@@ -56,9 +56,11 @@ class OrganizationController extends Controller
             'm.district as member_district',
             'm.sector as member_sector'
         )
-            ->join('shares', 'shares.userID', '=', 'm.id')  // Alias the members table as 'm'
-            ->from('users as m') // Set alias for the members table
-            ->get();
+        ->join('shares', 'shares.userID', '=', 'm.id')  // Join the 'shares' table on 'userID'
+        ->from('users as m') // Set alias for the 'users' table as 'm'
+        ->distinct() // Ensure distinct records are returned
+        ->get();
+
 
 
         $departments = User::all();
@@ -146,57 +148,192 @@ class OrganizationController extends Controller
         return redirect()->back();
     }
 
+    
 
 
-    public function shareUpdate(Request $request, $id)
+
+    // public function shareUpdate(Request $request, $id)
+    // {
+    //     // Validate the incoming request data
+
+
+
+    //     $validate = Validator::make($request->all(), [
+    //         'amount' => 'nullable|numeric|min:0',             // Amount must be a number greater than or equal to 0
+    //         'joining_date' => 'nullable|date',                // Joining date must be a valid date
+    //         'amount_increase' => 'nullable|numeric|min:0',    // Amount increase (optional), must be a number
+    //         'interest_rate' => 'nullable|numeric|min:0|max:100', // Interest rate (optional), between 0 and 100
+    //         'total_share' => 'nullable|numeric|min:0',            // Sector is required
+    //     ]);
+
+
+
+    //     // Check if validation fails
+    //     if ($validate->fails()) {
+    //         return redirect()->back()
+    //             ->withErrors($validate)      // Return with validation errors
+    //             ->withInput();                // Return with old input data
+    //     }
+
+
+
+    //     // Find the guardian by ID
+    //     $share = Share::findOrFail($id);
+
+    //     $joining_date = Carbon::parse($request->joining_date);
+
+
+    //     // Update the guardian record
+    //     $share->update([
+    //         'amount' => $request->amount,
+    //         'joining_date' =>  $joining_date,
+    //         'amount_increase' => $request->amount_increase,
+    //         'interest_rate' => $request->interest_rate,
+    //         'total_share' => $request->total_share,
+    //     ]);
+
+    //     notify()->success('Updated successfully.');
+
+    //     return redirect()->route('organization.share');
+
+
+
+    //     // // Redirect back with a success message
+    //     // return redirect()->back()->with('success', 'Guardian updated successfully');
+    // }
+
+    // public function transferShares(Request $request, $shareId)
+    // {
+    //     try {
+    //         // Validate the request
+    //         $request->validate([
+    //             'recipient_userID' => 'required|exists:users,id',
+    //             'amount' => 'required|numeric|min:0',
+    //         ]);
+    
+    //         // Find the share record
+    //         $share = Share::find($shareId);
+    
+    //         if (!$share) {
+    //             return redirect()->back()->withErrors('Share record not found.');
+    //         }
+    
+    //         // Ensure the user has enough shares to transfer
+    //         if ($share->amount < $request->amount) {
+    //             return redirect()->back()->withErrors('Insufficient shares to transfer.');
+    //         }
+    
+    //         // Transfer shares
+    //         $share->update([
+    //             'recipient_userID' => $request->recipient_userID,
+    //             'transfer_date' => now(),
+    //             'amount' => $share->amount - $request->amount, // Reduce the amount of shares in the current record
+    //         ]);
+    
+    //         // Create a new share record for the recipient
+    //         Share::create([
+    //             'userID' => $request->recipient_userID,
+    //             'amount' => $request->amount, // Set the amount of shares for the recipient
+    //             'joining_date' => now(), // Date the shares are received
+    //             'interest_rate' => $share->interest_rate, // Use the existing interest rate
+    //             'total_share' => $share->total_share, // Use the existing total share
+    //         ]);
+    
+    //         // Success message
+    //         return redirect()->route('organization.sharex')->with('success', 'Shares transferred successfully.');
+    
+    //     } catch (\Exception $e) {
+    //         // Catch any unexpected errors
+    //         return redirect()->back()->withErrors('An error occurred: ' . $e->getMessage());
+    //     }
+    // }
+
+
+    // public function transferShares(Request $request, $shareId)
+    // {
+    //     // Find the share to be transferred
+    //     $share = Share::find($shareId);
+        
+    //     if (!$share) {
+    //         return redirect()->back()->with('error', 'Share not found.');
+    //     }
+    
+    //     // Validate the incoming request
+    //     $request->validate([
+    //         'recipient_userID' => 'required|exists:users,id',
+    //         'amount' => 'required|numeric|min:0',
+    //     ]);
+    
+    //     // // Check if the user has enough shares
+    //     // if ($request->amount > $share->total_share) {
+    //     //     return redirect()->back()->with('error', 'Insufficient shares to transfer.');
+    //     // }
+    
+    //     // // Proceed with transferring the shares
+    //     // // Assuming you deduct the shares from the current user and transfer them to the recipient
+    //     // $share->total_share -= $request->amount; // Deduct from current user
+    //     // $share->save();
+    
+    //     // Update or create shares for the recipient
+    //     $recipientShare = Share::firstOrNew(['userID' => $request->recipient_userID]);
+    //     $recipientShare->total_share += $request->amount; // Add to recipient
+    //     $recipientShare->save();
+    
+    //     return redirect()->back()->with('success', 'Shares transferred successfully.');
+    // }
+
+    public function transferShares(Request $request, $shareId)
     {
-        // Validate the incoming request data
-
-
-
-        $validate = Validator::make($request->all(), [
-            'amount' => 'nullable|numeric|min:0',             // Amount must be a number greater than or equal to 0
-            'joining_date' => 'nullable|date',                // Joining date must be a valid date
-            'amount_increase' => 'nullable|numeric|min:0',    // Amount increase (optional), must be a number
-            'interest_rate' => 'nullable|numeric|min:0|max:100', // Interest rate (optional), between 0 and 100
-            'total_share' => 'nullable|numeric|min:0',            // Sector is required
+        try {
+            // Validate the request
+            $request->validate([
+                'recipient_userID' => 'required|exists:users,id',
+            ]);
+    
+            // Retrieve the share record to be transferred
+            $share = DB::table('shares')->where('id', $shareId)->first();
+    
+            if (!$share) {
+                return redirect()->back()->withErrors('Share record not found.');
+            }
+    
+            // Transfer the share by creating a new record for the recipient
+            DB::table('shares')->insert([
+                'userID' => $request->recipient_userID,
+                'amount' => $share->amount, // Transfer the entire amount
+                'amount_increase' => $share->amount_increase ?? null, // Maintain the amount increase
+                'interest_rate' => $share->interest_rate ?? null, // Set interest rate (0 if null)
+                'total_share' =>  $share->amount +  $share->amount_increase +$share->interest_rate, // Maintain the total shares
+                'joining_date' => now(), // Set the current date as joining date
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+    
+            // Optionally, you can delete the original share record if needed
+               // Update the status of the original share record
+        DB::table('shares')->where('id', $shareId)->update([
+            'status' => 'transferred', // Mark the share as transferred
+            'updated_at' => now(), // Update the timestamp
         ]);
 
-
-
-        // Check if validation fails
-        if ($validate->fails()) {
-            return redirect()->back()
-                ->withErrors($validate)      // Return with validation errors
-                ->withInput();                // Return with old input data
+    
+            // Success message
+            return redirect()->route('organization.share')->with('success', 'Shares transferred successfully.');
+            
+        } catch (\Exception $e) {
+            // Catch any unexpected errors
+            return redirect()->back()->withErrors('An error occurred: ' . $e->getMessage());
         }
-
-
-
-        // Find the guardian by ID
-        $share = Share::findOrFail($id);
-
-        $joining_date = Carbon::parse($request->joining_date);
-
-
-        // Update the guardian record
-        $share->update([
-            'amount' => $request->amount,
-            'joining_date' =>  $joining_date,
-            'amount_increase' => $request->amount_increase,
-            'interest_rate' => $request->interest_rate,
-            'total_share' => $request->total_share,
-        ]);
-
-        notify()->success('Updated successfully.');
-
-        return redirect()->route('organization.share');
-
-
-
-        // // Redirect back with a success message
-        // return redirect()->back()->with('success', 'Guardian updated successfully');
     }
+    
+
+    
+
+
+
+
+
+
 
 
 

@@ -22,7 +22,8 @@ class LoanController extends Controller
         $leaves = Leave::all();
         $departments = User::all();
         $leaveTypes = LeaveType::all();
-        return view('admin.pages.Leave.leaveForm', compact('leaves', 'leaveTypes', 'departments'));
+        $currentUser = auth()->user(); // Get the currently logged-in user
+        return view('admin.pages.Leave.leaveForm', compact('leaves', 'leaveTypes', 'departments','currentUser'));
     }
 
     /**
@@ -38,10 +39,9 @@ class LoanController extends Controller
     {
         // Validate the input
         $validate = Validator::make($request->all(), [
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0|max:700000', // Ensure the amount does not exceed 700,000 RWF
             'start_date' => 'required|date|after:today',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'interest_rate' => 'nullable|numeric|min:0',
             'userID' => 'required|exists:users,id',
         ]);
     
@@ -60,25 +60,28 @@ class LoanController extends Controller
             return redirect()->back();
         }
     
-        // Calculate total days (optional if needed)
-        $totalDays = $toDate->diffInDays($fromDate) + 1;
+        // Calculate the number of months for the loan
+        $months = $fromDate->diffInMonths($toDate);
+    
+        // Set fixed interest rates
+        $interestRate = $months <= 8 ? 5 : 15; // 5% if within 8 months, otherwise 15%
     
         // Insert new loan record using raw SQL
         DB::insert('
-            INSERT INTO loans (userID, amount, start_date, end_date, interest_rate, status, created_at, updated_at)
+            INSERT INTO loans (userID, amount, interest_rate, start_date, end_date, status, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())', [
             $request->userID,
             $request->amount,
+            $interestRate,
             $fromDate,
             $toDate,
-            $request->interest_rate,
             '0' // Loan status, 0 for not approved
         ]);
     
         notify()->success('Applied Loan successfully');
         return redirect()->back();
     }
-
+    
     public function myLeave()
     {
         
