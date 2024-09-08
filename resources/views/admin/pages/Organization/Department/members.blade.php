@@ -107,7 +107,7 @@
                         <select class="form-control" name="role" required>
                             <option value="member" selected>Member</option>
                             <option value="admin">Admin</option>
-                            <option value="agent">Agent</option>
+                            <option value="acountant">Acountant</option>
                         </select>
                     </div>
                 

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('punishments', function (Blueprint $table) {
-            //
+        Schema::create('cooperative_accounts', function (Blueprint $table) {
+            $table->id();
             $table->string('type')->nullable();
             $table->string('account_number')->unique();
             $table->string('account_holder_name');
@@ -20,7 +20,6 @@ return new class extends Migration
             $table->decimal('interest_rate', 5, 2)->default(0.00);
             $table->date('opening_date');
             $table->timestamps();
-            $table->date("punishimentDate")->nullable();
         });
     }
 
@@ -29,8 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('punishments', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('cooperative_accounts');
     }
 };
