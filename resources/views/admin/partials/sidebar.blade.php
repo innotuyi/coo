@@ -35,7 +35,7 @@
 
 
         {{-- Manage Member --}}
-        @if (auth()->user()->role === 'admin')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'secretary')
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#widgetsDropdown" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">
@@ -74,41 +74,114 @@
                 </ul>
             </li>
         @endif
-
-
         {{-- Manage Loan --}}
-        <li class="sidebar-list-item py-2">
-            <a class="sidebar-link text-muted" href="#" data-bs-target="#componentsDropdown" role="button"
-                aria-expanded="false" data-bs-toggle="collapse">
-                <i class="fa-solid fa-dollar-sign me-2 text-info"></i>
-                <span class="sidebar-link-title fs-6">Manage Loan</span></a>
-            <ul class="sidebar-menu list-unstyled collapse" id="componentsDropdown">
-                <li class="sidebar-list-item py-2 fs-6">
-                    <a class="sidebar-link text-muted ms-4" href="{{ route('loan.loanForm') }}">
-                        <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Apply Loan
-                    </a>
-                </li>
-                <li class="sidebar-list-item py-2 fs-6">
-                    <a class="sidebar-link text-muted ms-4" href="{{ route('leave.myLeave') }}">
-                        <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>My Loan
-                    </a>
-                </li>
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'secretary')
+            <li class="sidebar-list-item py-2">
+                <a class="sidebar-link text-muted" href="#" data-bs-target="#componentsDropdown" role="button"
+                    aria-expanded="false" data-bs-toggle="collapse">
+                    <i class="fa-solid fa-dollar-sign me-2 text-info"></i>
+                    <span class="sidebar-link-title fs-6">Manage Loan</span></a>
+                <ul class="sidebar-menu list-unstyled collapse" id="componentsDropdown">
+                        <li class="sidebar-list-item py-2 fs-6">
+                            <a class="sidebar-link text-muted ms-4" href="{{ route('loan.loanForm') }}">
+                                <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Apply Loan
+                            </a>
+                        </li>
+                 
 
-                @if (auth()->user()->role === 'admin')
+                    {{-- Shown to both accountant and secretary --}}
+                    <li class="sidebar-list-item py-2 fs-6">
+                        <a class="sidebar-link text-muted ms-4" href="{{ route('leave.myLeave') }}">
+                            <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>My Loan
+                        </a>
+                    </li>
+
                     <li class="sidebar-list-item py-2 fs-6">
                         <a class="sidebar-link text-muted ms-4" href="{{ route('loan.loanStatus') }}">
                             <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Loan Request
                         </a>
                     </li>
+
                     <li class="sidebar-list-item py-2 fs-6">
                         <a class="sidebar-link text-muted ms-4" href="{{ route('loan.paymentHistory') }}">
                             <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Payment history
                         </a>
                     </li>
-                @endif
 
-            </ul>
-        </li>
+                </ul>
+            </li>
+        @endif
+
+
+           {{-- Manage Loan --}}
+           {{-- @if (auth()->user()->role === 'secretary') --}}
+           {{-- <li class="sidebar-list-item py-2">
+               <a class="sidebar-link text-muted" href="#" data-bs-target="#componentsDropdown" role="button"
+                   aria-expanded="false" data-bs-toggle="collapse">
+                   <i class="fa-solid fa-dollar-sign me-2 text-info"></i>
+                   <span class="sidebar-link-title fs-6">Manage Loan</span></a>
+               <ul class="sidebar-menu list-unstyled collapse" id="componentsDropdown">
+                       <li class="sidebar-list-item py-2 fs-6">
+                           <a class="sidebar-link text-muted ms-4" href="{{ route('loan.loanForm') }}">
+                               <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Apply Loan
+                           </a>
+                       </li> --}}
+                   {{-- Shown to both accountant and secretary --}}
+                   {{-- <li class="sidebar-list-item py-2 fs-6">
+                       <a class="sidebar-link text-muted ms-4" href="{{ route('leave.myLeave') }}">
+                           <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>My Loan
+                       </a>
+                   </li>
+
+                   <li class="sidebar-list-item py-2 fs-6">
+                       <a class="sidebar-link text-muted ms-4" href="{{ route('loan.loanStatus') }}">
+                           <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Loan Request
+                       </a>
+                   </li>
+
+                   <li class="sidebar-list-item py-2 fs-6">
+                       <a class="sidebar-link text-muted ms-4" href="{{ route('loan.paymentHistory') }}">
+                           <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Payment history
+                       </a>
+                   </li> --}}
+               {{-- </ul> --}}
+           </li>
+           {{-- @endif --}}
+
+              {{-- Manage Loan --}}
+              @if (auth()->user()->role === 'member'||auth()->user()->role === 'acountant')
+              <li class="sidebar-list-item py-2">
+                  <a class="sidebar-link text-muted" href="#" data-bs-target="#componentsDropdown" role="button"
+                      aria-expanded="false" data-bs-toggle="collapse">
+                      <i class="fa-solid fa-dollar-sign me-2 text-info"></i>
+                      <span class="sidebar-link-title fs-6">Manage Loan</span></a>
+                  <ul class="sidebar-menu list-unstyled collapse" id="componentsDropdown">
+                          <li class="sidebar-list-item py-2 fs-6">
+                              <a class="sidebar-link text-muted ms-4" href="{{ route('loan.loanForm') }}">
+                                  <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Apply Loan
+                              </a>
+                          </li>
+                      <li class="sidebar-list-item py-2 fs-6">
+                          <a class="sidebar-link text-muted ms-4" href="{{ route('leave.myLeave') }}">
+                              <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>My Loan
+                          </a>
+                      </li>
+                 
+                  </ul>
+              </li>
+          @endif
+   
+
+
+
+
+
+
+
+
+
+
+
 
         {{-- Manage Property --}}
         @if (auth()->user()->role === 'admin')
@@ -163,10 +236,29 @@
         @endif
 
 
+        {{-- Manage Punishment --}}
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'acountant')
+            <li class="sidebar-list-item py-2">
+                <a class="sidebar-link text-muted" href="#" data-bs-target="#parking" role="button"
+                    aria-expanded="false" data-bs-toggle="collapse">
+                    <i class="fa-solid fa-gavel me-2 text-info"></i>
+                    <span class="sidebar-link-title fs-6">Manage Parking</span>
+                </a>
+                <ul class="sidebar-menu list-unstyled collapse" id="parking">
+                    <li class="sidebar-list-item py-2 fs-6">
+                        <a class="sidebar-link text-muted ms-4" href="{{ route('organization.parking') }}">
+                            <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Parking
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endif
+
+
 
 
         {{-- Manage Expenditure --}}
-        @if (auth()->user()->role === 'admin'|| auth()->user()->role === 'acountant')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'acountant')
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#expenduture" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">

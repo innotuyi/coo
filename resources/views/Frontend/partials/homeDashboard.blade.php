@@ -20,14 +20,12 @@
                     <form action="{{ route('admin.login.post') }}" method="POST">
                         @csrf
                         <div class="form-group">
-                        
-                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            
-                                <input type="email" class="form-control" name="email" placeholder="Email" autocomplete="off" autocorrect="off" autocapitalize="off" required>
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control" name="email" placeholder="Email or Phone" autocomplete="off" required>
                         </div>
                         <div class="form-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" class="form-control" name="password" placeholder="Password" required>
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control" name="password" placeholder="Password" required>
                         </div>
                         <div class="form-group text-center">
                             <button type="submit" class="btn btn-primary btn-block">Login</button>
@@ -36,6 +34,7 @@
                             <a href="#" class="text-secondary">Forgot Password?</a>
                         </div>
                     </form>
+                    
                 </div>
             </div>
         </div>

@@ -55,6 +55,23 @@
                                                 @endforeach
                                             </select>
                                         </div>
+                                        
+                                        <div class="form-outline">
+                                            <label class="form-label" for="memberID">Bank Type</label>
+                                            <select class="form-control" name="bank_type">
+                                                <option value="Bank of Kigali">Bank Of Kigali</option>
+                                                <option value="Equity">Equity</option>
+                                                <option value="I&M Bank">I&M Bank</option>
+                                                <option value="Cogebanque">Cogebanque</option>
+                                                <option value="KCB Bank Rwanda">KCB Bank Rwanda</option>
+                                                <option value="Access Bank">Access Bank</option>
+                                                <option value="GT Bank">GT Bank</option>
+                                                <option value="BPR Atlas Mara">BPR Atlas Mara</option>
+                                                <option value="Zigama CSS">Zigama CSS</option>
+                                                <option value="NCBA Bank">NCBA Bank</option>
+                                            </select>
+                                        </div>
+                                        
 
 
                                         <div class="form-outline">
@@ -64,7 +81,7 @@
                                         </div>
                                         
                                         <div class="form-outline">
-                                            <label class="form-label mt-2" for="form11Example1" min=1>Amount</label>
+                                            <label class="form-label mt-2" for="form11Example1" min=1>Commision Amount</label>
                                             <input type="number"  class="form-control" name="amount"
                                                 id="" required>
                                         </div>
@@ -100,9 +117,11 @@
                             <tr>
                                 <th>NO</th>
                                 <th>Description</th>
-                                <th>Amount</th>
+                                <th>Commision Amount</th>
                                 <th>Date</th>
                                 <th>Category</th>
+                                <th>Bank Name</th>
+
                                 {{-- <th>Actions</th> --}}
                             </tr>
                         </thead>
@@ -114,6 +133,8 @@
                                 <td>{{ $item->amount }}</td>
                                 <td>{{ $item->date }}</td>
                                 <td>{{ $item->category_name }}</td>
+                                <td>{{ $item->bank_type }}</td>
+
 
                                 {{-- <td>
                                     <a class="btn btn-success rounded-pill fw-bold text-white"

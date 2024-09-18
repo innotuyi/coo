@@ -16,14 +16,14 @@
     @endif
 
     @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
 
 
@@ -55,35 +55,42 @@
                                 <th>Amount</th>
                                 <th>Date</th>
                                 <th>Amount Increase</th>
-                                <th>Interest Rate</th>
+                                {{-- <th>Interest Rate</th> --}}
                                 <th>Total Share</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($shares as $item)
+                            @if ($shares->isEmpty())
                                 <tr>
-                                    <td>{{ $item->id }}</td>
-                                    <td>{{ $item->member_name }}</td>
-                                    <td>{{ $item->amount }}</td>
-                                    <td>{{ $item->joining_date }}</td>
-                                    <td>{{ $item->amount_increase ?? 'N/A' }}</td>
-                                    <td>{{ $item->interest_rate ?? 'N/A' }}</td>
-                                    <td>{{ $item->total_share ?? 'N/A' }}</td>
-                                    <td>{{ $item->status }}</td>
-                                    <td>
-                                        {{-- Other buttons like Edit or Delete --}}
-                                        <a class="btn btn-danger rounded-pill fw-bold text-white {{ $item->status === 'transferred' ? 'disabled' : '' }}" 
-                                           data-bs-toggle="{{ $item->status === 'transferred' ? '' : 'modal' }}"
-                                           data-bs-target="{{ $item->status === 'transferred' ? '' : '#addTransferbtn' }}">
-                                           Sell share
-                                        </a>
-                                    </td>
+                                    <td colspan="7" class="text-center">No shares available</td>
                                 </tr>
-                            @endforeach
+                            @else
+                                @foreach ($shares as $item)
+                                    <tr>
+                                        <td>{{ $item->id }}</td>
+                                        <td>{{ $item->member_name }}</td>
+                                        <td>{{ $item->amount }}</td>
+                                        <td>{{ $item->joining_date }}</td>
+                                        <td>{{ $item->amount_increase ?? 'N/A' }}</td>
+                                        {{-- <td>{{ $item->interest_rate ?? 'N/A' }}</td> --}}
+                                        <td>{{ $item->total_share ?? 'N/A' }}</td>
+                                        <td>{{ $item->status }}</td>
+                                        <td>
+                                            {{-- Other buttons like Edit or Delete --}}
+                                            <a class="btn btn-danger rounded-pill fw-bold text-white {{ $item->status === 'transferred' ? 'disabled' : '' }}"
+                                                data-bs-toggle="{{ $item->status === 'transferred' ? '' : 'modal' }}"
+                                                data-bs-target="{{ $item->status === 'transferred' ? '' : '#addTransferbtn' }}">
+                                                Sell share
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         </tbody>
-                        
+
+
                     </table>
                 </div>
             </div>
@@ -124,10 +131,10 @@
                                     <label class="form-label" for="amount_increase">Amount Increase/ </label>
                                     <input type="number" class="form-control" name="amount_increase">
                                 </div>
-                                <div class="form-outline mt-3">
+                                {{-- <div class="form-outline mt-3">
                                     <label class="form-label" for="interest_rate">Interest Rate</label>
                                     <input type="number" class="form-control" name="interest_rate">
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                         <div class="text-center">
@@ -155,7 +162,7 @@
                         <div class="mb-3">
                             <label for="recipient_userID" class="form-label">Recipient</label>
                             <select class="form-control" id="recipient_userID" name="recipient_userID" required>
-                                @foreach ($departments as $user)
+                                @foreach ($departments as $user) 
                                     <option value="{{ $user->id }}">{{ $user->name }}</option>
                                 @endforeach
                             </select>
@@ -164,7 +171,7 @@
                         <div class="mb-3">
                             <label for="amount" class="form-label">Amount Charged</label>
                             <input type="number" class="form-control" id="amount" value=500 name="amount"
-                                min="0" step="any"  required>
+                                min="0" step="any" required>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Transfer Shares</button>

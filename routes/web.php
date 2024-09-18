@@ -98,6 +98,23 @@ Route::post('/punishment/punishmentStore', [OrganizationController::class, 'puni
 Route::get('/punishment/punishmentEdit/{id}', [OrganizationController::class, 'punishmentEdit'])->name('punishment.punishmentEdit');
 Route::put('/punishment/punishmentUpdate/{id}', [OrganizationController::class, 'punishmentUpdate'])->name('punishment.punishmentUpdate');
 Route::get('/punishment/Deletepunishment/{id}', [OrganizationController::class, 'Deletepunishment'])->name('punishment.Deletepunishment');
+
+
+Route::get('/Organization/parking', [OrganizationController::class, 'parking'])->name('organization.parking');
+Route::post('/parking/parkingStore', [OrganizationController::class, 'parkingStore'])->name('punishment.ParkingStore');
+Route::get('/parking/parkingEdit/{id}', [OrganizationController::class, 'parkingEdit'])->name('parking.parkingEdit');
+Route::put('/parking/parkingUpdate/{id}', [OrganizationController::class, 'parkingUpdate'])->name('parking.parkingUpdate');
+Route::get('/parking/Deleteparking/{id}', [OrganizationController::class, 'Deleteparking'])->name('parking.Deleteparking');
+
+
+
+
+
+
+
+
+
+
 Route::get('/Organization/expendutureCategory', [OrganizationController::class, 'expendutureCategory'])->name('organization.expendutureCategory');
 
 Route::get('/Organization/irembo', [OrganizationController::class, 'irembo'])->name('organization.irembo');

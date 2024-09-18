@@ -63,13 +63,22 @@
                                     </div>
                                 </div>
                         
-                                <!-- Member Dropdown -->
+                                <!-- Conditional Member Dropdown (Visible for accountants) -->
+                                @if ($isAccountant)
                                 <div class="col-md-6">
                                     <div class="form-outline">
-                                        {{-- <label class="form-label mt-2" for="userID">Member ID</label> --}}
-                                        <input type="text" class="form-control" id="userID" name="userID" value="{{ auth()->user()->id }}" hidden>
+                                        <label class="form-label mt-2 fw-bold" for="userID">Member</label>
+                                        <select class="form-control" id="userID" name="userID">
+                                            @foreach($departments as $department)
+                                                <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
+                                @else
+                                <!-- Member Applying for Themselves (Hidden input for members) -->
+                                <input type="hidden" id="userID" name="userID" value="{{ auth()->user()->id }}">
+                                @endif
                             </div>
                         
                             <!-- Submit Button -->
@@ -77,6 +86,7 @@
                                 <button type="submit" class="btn btn-success p-2 text-lg rounded-pill col-md-10">Submit</button>
                             </div>
                         </form>
+                        
                         
                         
                     </div>

@@ -23,30 +23,39 @@ class UserController extends Controller
 
     public function loginPost(Request $request)
     {
+        // Validate the incoming request data
         $val = Validator::make(
             $request->all(),
             [
-                'email' => 'required|email',
+                'email' => 'required',
                 'password' => 'required|min:6',
             ]
         );
-
+    
+        // If validation fails, redirect back with errors
         if ($val->fails()) {
-            // Redirect back with validation errors
             return redirect()->back()->withErrors($val)->withInput();
         }
-
-
-        $credentials = $request->except('_token');
-
-        $login = auth()->attempt($credentials);
-        if ($login) {
-            notify()->success('Successfully Logged in');
+    
+        // Determine if the input is an email or phone number
+        $loginField = filter_var($request->input('email'), FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+    
+        // Use raw SQL for email or phone authentication
+        $credentials = [
+            $loginField => $request->input('email'),
+            'password' => $request->input('password'),
+        ];
+    
+        // Attempt to authenticate the user using the credentials
+        if (auth()->attempt($credentials)) {
+            // notify()->success('Successfully Logged in');
             return redirect()->route('dashboard');
         }
-
-        return redirect()->back()->withErrors('Invalid user email or password');
+    
+        // Authentication failed, redirect back with error
+        return redirect()->back()->withErrors('Invalid user email or phone number or password');
     }
+    
 
     public function logout()
     {

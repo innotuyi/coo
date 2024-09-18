@@ -62,6 +62,13 @@
                                                 id="" required>
                                         </div>
 
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Happend At</label>
+                                            <input type="date" class="form-control" name="meeting_date"
+                                                id="" required>
+                                        </div>
+
+
 
                                     </div>
                                 </div>
@@ -84,6 +91,8 @@
                                 <th>Topic</th>
                                 <th>Description</th>
                                 <th>Meeting Attachment</th>
+                                <th>Date</th>
+
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -93,15 +102,18 @@
                                 <td>{{ $item->id }}</td>
                                 <td>{{ $item->topic}}</td>
                                 <td>{{ $item->descritption}}</td>
+
                                 <td>
                                     @if($item->meeting_attachment)
                                         <a href="{{ url('storage/uploads'.$item->meeting_attachment) }}" target="_blank">View Attachment</a>
                                     @endif
                                 </td>
+                                <td>{{ $item->meeting_date}}</td>
+
 
                                 <td>
-                                    <a class="btn btn-success rounded-pill fw-bold text-white"
-                                        href="{{ route('meeting.meetingEdit', $item->id) }}">Edit</a>
+                                    {{-- <a class="btn btn-success rounded-pill fw-bold text-white"
+                                        href="{{ route('meeting.meetingEdit', $item->id) }}">Edit</a> --}}
                                     <a class="btn btn-danger rounded-pill fw-bold text-white"
                                         href="{{ route('meeting.deleteMeeting', $item->id) }}">Delete</a>
                                 </td>

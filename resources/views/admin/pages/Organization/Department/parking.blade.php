@@ -2,10 +2,9 @@
 
 @section('content')
 <div class="shadow p-4 d-flex justify-content-between align-items-center ">
-    <h4 class="text-uppercase">Expenduture</h4>
+    <h4 class="text-uppercase">Parking</h4>
 </div>
 <div class="container my-5 py-5">
-
 
     @if ($errors->any())
     <div class="alert alert-danger">
@@ -39,48 +38,58 @@
             <div class="text-left w-30 ">
                 <div class="card mb-4">
                     <div class="card-header py-3">
-                        <h6 class="text-uppercase">Add Expenduture</h>
+                        <h6 class="text-uppercase">Parking</h>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('expenduture.expendutureStore') }}" method="post" enctype="multipart/form-data">
+                        <form action="{{ route('punishment.ParkingStore') }}" method="post">
                             @csrf
                             <div class="row mb-4">
-                                <div class="col">
+                                <div class=" col">
                                     <div class="col">
                                         <div class="form-outline">
-                                            <label class="form-label" for="memberID">Category</label>
-                                            <select class="form-control" name="category_id">
+                                            <label class="form-label mt-2" for="form11Example1">Member</label>
+                                            <select type="text" class="form-control" name="userID">
                                                 @foreach ($departments as $department)
-                                                <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                                <option value="{{$department->id}}">{{ $department->name }}
+                                                </option>
                                                 @endforeach
                                             </select>
                                         </div>
-                        
-                                        <div class="form-outline">
-                                            <label class="form-label mt-2" for="description">Description</label>
-                                            <input class="form-control" name="description" id="description">
-                                        </div>
-                        
-                                        <div class="form-outline">
-                                            <label class="form-label mt-2" for="amount">Amount</label>
-                                            <input type="number" min="1" class="form-control" name="amount" id="amount" required>
-                                        </div>
-                        
-                                        <div class="form-outline">
-                                            <label class="form-label mt-2" for="date">Date</label>
-                                            <input type="date" class="form-control" name="date" id="date" required>
-                                        </div>
-                        
-                                        <div class="form-outline">
-                                            <label class="form-label mt-2" for="meeting_attachment">Attachment</label>
-                                            <input type="file" class="form-control" name="meeting_attachment" id="meeting_attachment">
-                                        </div>
-                        
-                                        {{-- Optional Employee Field --}}
+
                                         {{-- <div class="form-outline">
-                                            <label class="form-label mt-2" for="employee_id">Employee</label>
-                                            <input type="text" class="form-control" name="employee_id" id="employee_id">
+                                            <label class="form-label mt-2" for="form11Example1">Punishment Type</label>
+                                            <input  class="form-control" name="description"
+                                                id="" required>
                                         </div> --}}
+
+
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Fees/Umusanzu</label>
+                                            <input type="number"  class="form-control" name="cost"
+                                                id="" required>
+                                        </div>
+
+
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Charges/Amande</label>
+                                            <input type="number"  class="form-control" name="charges"
+                                                id="" >
+                                        </div>
+
+                                        
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Date</label>
+                                            <input type="date" class="form-control" name='parking_date' 
+                                                id="" >
+                                        </div>
+
+
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Comment</label>
+                                            <input  class="form-control" name="description"
+                                                id="" >
+                                        </div>
+                                                                               
                                     </div>
                                 </div>
                             </div>
@@ -88,7 +97,6 @@
                                 <button type="submit" class="btn btn-success p-2 px-3 rounded-pill">Create</button>
                             </div>
                         </form>
-                        
                     </div>
                 </div>
             </div>
@@ -100,38 +108,34 @@
                         <thead class="bg-light">
                             <tr>
                                 <th>NO</th>
-                                <th>Description</th>
-                                <th>Amount</th>
+                                <th>Member Name</th>
+                                <th>Reason</th>
+                                <th>Fees</th>
+                                <th>Charges</th>
                                 <th>Date</th>
-                                <th>Category</th>
-                                <th>Attachment</th>
-                                
-                                {{-- <th>Bank Name</th> --}}
 
-                                {{-- <th>Actions</th> --}}
+
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($expenditures as  $item)
+                            @foreach ($members as  $item)
                             <tr>
                                 <td>{{ $item->id }}</td>
+                                <td>{{ $item->member_name }}</td>
                                 <td>{{ $item->description }}</td>
-                                <td>{{ $item->amount }}</td>
-                                <td>{{ $item->date }}</td>
-                                <td>{{ $item->category_name }}</td>
+                                <td>{{ $item->cost }}</td>
+                                <td>{{ $item->charges }}</td>
+                                <td>{{ $item->parking_date }}</td>
+
+
+
                                 <td>
-                                    @if($item->meeting_attachment)
-                                        <a href="{{ url('storage/uploads/'.$item->meeting_attachment) }}" target="_blank">View Attachment</a>
-                                    @endif
-                                </td>
-
-
-                                {{-- <td>
                                     <a class="btn btn-success rounded-pill fw-bold text-white"
-                                        href="{{ route('expenduture.expendutureEdit', $item->id) }}">Edit</a>
-                                    <a class="btn btn-danger rounded-pill fw-bold text-white"
-                                        href="{{ route('expenduture.expendutureDelete', $item->id) }}">Delete</a>
-                                </td> --}}
+                                        href="{{ route('parking.parkingEdit', $item->id) }}">Edit</a>
+                                    {{-- <a class="btn btn-danger rounded-pill fw-bold text-white"
+                                        href="{{ route('punishment.Deletepunishment', $item->id) }}">Delete</a> --}}
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>

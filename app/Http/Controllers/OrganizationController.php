@@ -10,6 +10,7 @@ use App\Models\ExpenditureCategory;
 use App\Models\Guardian;
 use App\Models\Meeting;
 use App\Models\Member;
+use App\Models\Parking;
 use App\Models\Properties;
 use App\Models\Punishment;
 use App\Models\Share;
@@ -31,16 +32,17 @@ class OrganizationController extends Controller
     public function member()
     {
         $members = User::select(
-            'users.*',                // Select all columns from the 'members' table
+            'users.*',                // Select all columns from the 'users' table
             'guardians.id as guardian_id',    // Select and alias the 'id' column from 'guardians'
             'guardians.name as guardian_name', // Select and alias the 'name' column from 'guardians'
-            'guardians.phone as guardian_phone', // Select and alias any other guardian columns
+            'guardians.phone as guardian_phone', // Select and alias the 'phone' column from 'guardians'
             'guardians.idcard as guardian_idcard',
             'guardians.district as guardian_district',
             'guardians.sector as guardian_sector'
         )
-            ->join('guardians', 'guardians.id', '=', 'users.guardID') // Adjust the foreign key
+            ->leftJoin('guardians', 'guardians.id', '=', 'users.guardID') // Use left join to include users without a guardian
             ->get();
+
         $departments = Guardian::all();
         return view('admin.pages.Organization.Department.members', compact('departments', 'members'));
     }
@@ -77,7 +79,6 @@ class OrganizationController extends Controller
             'amount' => 'nullable|numeric|min:0',              // Amount must be a number greater than or equal to 0
             'joining_date' => 'nullable|date',                 // Joining date must be a valid date
             'amount_increase' => 'nullable|numeric|min:0',     // Amount increase (optional), must be a number
-            'interest_rate' => 'nullable|numeric|min:0',       // Interest rate (optional), between 0 and 100
             'total_share' => 'nullable|numeric|min:0',         // Total share
         ]);
 
@@ -93,19 +94,18 @@ class OrganizationController extends Controller
 
         // Calculate total share
         $total_share = $share
-            ? $share->amount + $share->amount_increase + $share->interest_rate
+            ? $share->amount + $share->amount_increase
             : 0;
 
         // Insert a new Share record using raw SQL
         DB::insert('
-        INSERT INTO shares (userID, amount, joining_date, amount_increase, interest_rate, total_share, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+        INSERT INTO shares (userID, amount, joining_date, amount_increase,total_share, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW())', [
             $request->userID,
             $request->amount,
             $joining_date,
             $request->amount_increase,
-            $request->interest_rate,
-            $total_share + $request->amount + $request->amount_increase + $request->interest_rate
+            $total_share + $request->amount + $request->amount_increase
         ]);
 
         notify()->success('New share created successfully.');
@@ -341,7 +341,7 @@ class OrganizationController extends Controller
     {
         // Use raw SQL to fetch all properties
         $departments = DB::select('SELECT * FROM properties');
-    
+
         return view('admin.pages.Organization.Department.properties', compact('departments'));
     }
 
@@ -357,25 +357,25 @@ class OrganizationController extends Controller
             'property_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'property_date' => 'required|date',
         ]);
-    
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
-    
+
         // Handle file uploads
-        $fileName = $request->hasFile('property_file') 
-            ? $request->file('property_file')->storeAs('uploads', date('Ymdhis') . '.' . $request->file('property_file')->getClientOriginalExtension(), 'public') 
+        $fileName = $request->hasFile('property_file')
+            ? $request->file('property_file')->storeAs('uploads', date('Ymdhis') . '.' . $request->file('property_file')->getClientOriginalExtension(), 'public')
             : null;
-    
-        $attachmentName = $request->hasFile('property_attachment') 
-            ? $request->file('property_attachment')->storeAs('uploads', date('Ymdhis') . '.' . $request->file('property_attachment')->getClientOriginalExtension(), 'public') 
+
+        $attachmentName = $request->hasFile('property_attachment')
+            ? $request->file('property_attachment')->storeAs('uploads', date('Ymdhis') . '.' . $request->file('property_attachment')->getClientOriginalExtension(), 'public')
             : null;
-    
+
         // Convert the property_date to a readable format using Carbon
         $propertyDate = Carbon::parse($request->property_date)->toDateString();
-    
+
         // Insert the property record using raw SQL
         DB::insert('
             INSERT INTO properties (name, location, comment, property_file, property_value, property_attachment, property_date, created_at, updated_at)
@@ -388,7 +388,7 @@ class OrganizationController extends Controller
             $attachmentName,
             $propertyDate
         ]);
-    
+
         return redirect()->route('organization.properties')
             ->with('success', 'Property created successfully.');
     }
@@ -407,37 +407,37 @@ class OrganizationController extends Controller
     }
 
 
-  
-public function propertyUpdate(Request $request, $id)
-{
-    // Validate the incoming request data
-    $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'location' => 'nullable|string|max:255',
-    ]);
 
-    // Check if validation fails
-    if ($validator->fails()) {
-        return redirect()->back()
-            ->withErrors($validator)      // Return with validation errors
-            ->withInput();                // Return with old input data
-    }
+    public function propertyUpdate(Request $request, $id)
+    {
+        // Validate the incoming request data
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+        ]);
 
-    // Update the property record using raw SQL
-    DB::update('
+        // Check if validation fails
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)      // Return with validation errors
+                ->withInput();                // Return with old input data
+        }
+
+        // Update the property record using raw SQL
+        DB::update('
         UPDATE properties 
         SET name = ?, location = ?, updated_at = NOW()
         WHERE id = ?', [
-        $request->name,
-        $request->location,
-        $id
-    ]);
+            $request->name,
+            $request->location,
+            $id
+        ]);
 
-    // Notify the user about the success
-    notify()->success('Property updated successfully.');
+        // Notify the user about the success
+        notify()->success('Property updated successfully.');
 
-    return redirect()->route('organization.properties');
-}
+        return redirect()->route('organization.properties');
+    }
 
 
     public function deleteProperty($id)
@@ -454,10 +454,10 @@ public function propertyUpdate(Request $request, $id)
 
     public function meeting()
     {
-         // Fetch all meetings using raw SQL
-    $meetings = DB::select('SELECT * FROM meetings');
+        // Fetch all meetings using raw SQL
+        $departments  = DB::select('SELECT * FROM meetings');
 
-    return view('admin.pages.Organization.Department.meeting', compact('meetings'));
+        return view('admin.pages.Organization.Department.meeting', compact('departments'));
     }
 
 
@@ -468,14 +468,15 @@ public function propertyUpdate(Request $request, $id)
             'topic' => 'required|string|max:255',
             'descritption' => 'required|string|max:500',
             'meeting_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'meeting_date' => 'required|date'  // Add meeting_date validation
         ]);
-    
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
-    
+
         // Handle file upload if exists
         $attachmentName = null;
         if ($request->hasFile('meeting_attachment')) {
@@ -483,30 +484,34 @@ public function propertyUpdate(Request $request, $id)
             $attachmentName = date('YmdHis') . '.' . $attachment->getClientOriginalExtension();
             $attachment->storeAs('uploads', $attachmentName, 'public');
         }
-    
+
+        // Parse meeting_date with Carbon
+        $meetingDate = Carbon::parse($request->meeting_date)->format('Y-m-d');
+
         // Insert data using raw SQL
         DB::insert('
-            INSERT INTO meetings (topic, descritption, meeting_attachment, created_at, updated_at)
-            VALUES (?, ?, ?, NOW(), NOW())', [
+            INSERT INTO meetings (topic, descritption, meeting_attachment, meeting_date, created_at, updated_at)
+            VALUES (?, ?, ?, ?, NOW(), NOW())', [
             $request->topic,
             $request->descritption,
-            $attachmentName
+            $attachmentName,
+            $meetingDate
         ]);
-    
+
         return redirect()->route('organization.meeting')
             ->with('success', 'Meeting created successfully');
     }
-    
+
     public function meetingEdit(Request $request, $id)
     {
         // Fetch the meeting using raw SQL
         $department = DB::select('SELECT * FROM meetings WHERE id = ?', [$id]);
-    
+
         // Check if the meeting exists
         if ($department) {
             // Since DB::select returns an array, get the first result
             $department = $department[0];
-    
+
             return view('admin.pages.Organization.Department.meetingEdit', compact('department'));
         } else {
             return redirect()->back()->with('error', 'Meeting not found.');
@@ -519,19 +524,19 @@ public function propertyUpdate(Request $request, $id)
         // Validate the incoming request data
         $validate = Validator::make($request->all(), [
             'topic' => 'required|string|max:255',
-            'description' => 'required|string|max:500',
+            'descritption' => 'required|string|max:500',
         ]);
-    
+
         // Check if validation fails
         if ($validate->fails()) {
             return redirect()->back()
                 ->withErrors($validate)
                 ->withInput();
         }
-    
+
         // Get the current timestamp using Carbon
         $updatedAt = Carbon::now();
-    
+
         // Update the meeting using raw SQL
         DB::update('
             UPDATE meetings
@@ -543,7 +548,7 @@ public function propertyUpdate(Request $request, $id)
             $updatedAt,
             $id
         ]);
-    
+
         return redirect()->route('organization.meeting')
             ->with('success', 'Meeting updated successfully.');
     }
@@ -572,8 +577,110 @@ public function propertyUpdate(Request $request, $id)
         return view('admin.pages.Organization.Department.punishment', compact('members', 'departments'));
     }
 
+    public function parking()
+    {
+        // Raw SQL for getting all users
+        $departments = DB::select("SELECT * FROM users");
 
-   
+        // Raw SQL for joining parkings and users
+        $members = DB::select("
+        SELECT parkings.*, users.name as member_name, users.phone as member_phone
+        FROM parkings
+        INNER JOIN users ON parkings.userID = users.id
+    ");
+
+        return view('admin.pages.Organization.Department.parking', compact('members', 'departments'));
+    }
+
+
+
+    public function parkingStore(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'userID' => 'required|exists:users,id',
+            'cost' => 'nullable|numeric',
+            'charges' => 'nullable|numeric',
+            'description' => 'nullable|string|max:255',
+            'parking_date' => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // Insert data using raw SQL
+        DB::insert('
+            INSERT INTO parkings (userID, cost, charges, description, parking_date, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->userID,
+            $request->cost,
+            $request->charges,
+            $request->description,
+            $request->parking_date
+        ]);
+
+        return redirect()->route('organization.parking')
+            ->with('success', 'parking created successfully.');
+    }
+
+
+    public function parkingEdit($id)
+    {
+
+        $department = Parking::join('users', 'parkings.userID', '=', 'users.id')
+            ->select('parkings.*', 'users.name as member_name', 'users.phone as member_phone')
+            ->where('parkings.id', $id)
+            ->firstOrFail();
+
+
+        return  view('admin.pages.Organization.Department.parkingEdit', compact('department'));
+    }
+
+
+    public function parkingUpdate(Request $request, $id)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'cost' => 'nullable|numeric',
+            'charges' => 'nullable|numeric',
+            'description' => 'nullable|string|max:255',
+            'parking_date' => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::update('
+            UPDATE parkings 
+            SET cost = ?, charges = ?, description = ?, parking_date = ?, updated_at = NOW() 
+            WHERE id = ?', [
+            $request->cost,
+            $request->charges,
+            $request->description,
+            $request->parking_date,
+            $id
+        ]);
+
+
+        return redirect()->route('organization.parking')
+            ->with('success', 'parking updated successfully.');
+    }
+
+    public function Deleteparking($id)
+    {
+        DB::delete('DELETE FROM parkings WHERE id = ?', [$id]);
+
+        return redirect()->route('organization.parking')
+            ->with('success', ' parking successfully.');
+    }
+
+
+
+
+
+
+
     public function punishmentStore(Request $request)
     {
         // Validate input
@@ -584,18 +691,18 @@ public function propertyUpdate(Request $request, $id)
             'type' => 'nullable|string|max:255', // Optional punishment type
             'punishimentDate' => 'nullable|date',  // Optional punishment date
         ]);
-    
+
         if ($validate->fails()) {
             return redirect()->back()
                 ->withErrors($validate)
                 ->withInput();
         }
-    
+
         // Convert the punishment date to a readable format using Carbon
-        $punishmentDate = $request->punishimentDate 
-            ? Carbon::parse($request->punishimentDate)->format('Y-m-d') 
+        $punishmentDate = $request->punishimentDate
+            ? Carbon::parse($request->punishimentDate)->format('Y-m-d')
             : null;
-    
+
         // Insert data using raw SQL
         DB::insert('
             INSERT INTO punishments (userID, description, charges, type, punishimentDate, created_at, updated_at)
@@ -606,11 +713,11 @@ public function propertyUpdate(Request $request, $id)
             $request->type,
             $punishmentDate
         ]);
-    
+
         return redirect()->route('organization.punishment')
             ->with('success', 'Punishment created successfully.');
     }
-    
+
 
 
     public function punishmentEdit($id)
@@ -794,32 +901,50 @@ public function propertyUpdate(Request $request, $id)
 
     public function expendutureStore(Request $request)
     {
-
-
-        // Create the validator instance using Validator::make
+        // Validate the incoming request data
         $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:expenditure_categories,id',
             'description' => 'nullable|string',
             'amount' => 'required|numeric',
             'date' => 'required|date',
             'paid_to' => 'nullable|string',
+            'meeting_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'employee_id' => 'nullable|exists:employees,id',
         ]);
 
-        // Check if validation fails
+        // If validation fails, redirect back with errors and input data
         if ($validator->fails()) {
             return redirect()->back()
-                ->withErrors($validator)      // Return with validation errors
-                ->withInput();                // Return with old input data
+                ->withErrors($validator)
+                ->withInput();
         }
-        $data = $request->all();
-        $data['date'] = Carbon::parse($request->date)->toDateString();
 
-        // Create the expenditure with the parsed date
-        Expenditure::create($data);
+        // Handle the file upload if provided
+        $attachmentName = null;
+        if ($request->hasFile('meeting_attachment')) {
+            $attachment = $request->file('meeting_attachment');
+            $attachmentName = date('YmdHis') . '.' . $attachment->getClientOriginalExtension();
+            $attachment->storeAs('uploads', $attachmentName, 'public');
+        }
 
-        return redirect()->route('organization.expenduture')
-            ->with('success', 'Expenditure  created successfully.');
+        // Convert the date using Carbon
+        $date = Carbon::parse($request->date)->toDateString();
+
+        // Insert the data using raw SQL
+        DB::insert('
+            INSERT INTO expenditures (category_id, description, amount, date, paid_to, meeting_attachment, employee_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+            $request->category_id,
+            $request->description,
+            $request->amount,
+            $date,
+            $request->paid_to,
+            $attachmentName,
+            $request->employee_id
+        ]);
+
+        // Redirect back with success message
+        return redirect()->back()->with('success', 'Expenditure created successfully.');
     }
 
     public function expendutureEdit($id)
@@ -851,6 +976,7 @@ public function propertyUpdate(Request $request, $id)
         // Update the expenditure, passing the Carbon date separately
         $expenditure->update([
             'description' => $request->input('description'),
+            'bank_type' => $request->input('bank_type'),
             'amount' => $request->input('amount'),
             'date' => $formattedDate,  // Use the formatted Carbon date
             'paid_to' => $request->input('paid_to'),
@@ -1047,47 +1173,47 @@ public function propertyUpdate(Request $request, $id)
         $guardians = Guardian::all();
         return view('admin.pages.Organization.Department.department', compact('guardians'));
     }
- 
-public function store(Request $request)
-{
-    // Validate the input
-    $validate = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'phone' => 'required|digits:10',
-        'idcard' => 'required|digits:16|unique:guardians,idcard',
-        'district' => 'required|string|max:255',
-        'sector' => 'required|string|max:255',
-        'guardian_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate guardian image
-    ]);
 
-    if ($validate->fails()) {
-        return redirect()->back()->withErrors($validate)->withInput();
-    }
+    public function store(Request $request)
+    {
+        // Validate the input
+        $validate = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phone' => 'required|digits:10',
+            'idcard' => 'required|digits:16|unique:guardians,idcard',
+            'district' => 'required|string|max:255',
+            'sector' => 'required|string|max:255',
+            'guardian_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate guardian image
+        ]);
 
-    // Handle the file upload if it exists
-    $fileName = null;
-    if ($request->hasFile('guardian_image')) {
-        $file = $request->file('guardian_image');
-        $fileName = time() . '.' . $file->getClientOriginalExtension(); // Create a unique file name
-        $file->storeAs('uploads', $fileName, 'public'); // Store in storage/app/public/uploads
-    }
+        if ($validate->fails()) {
+            return redirect()->back()->withErrors($validate)->withInput();
+        }
 
-    // Insert guardian data using raw SQL
-    DB::insert('
+        // Handle the file upload if it exists
+        $fileName = null;
+        if ($request->hasFile('guardian_image')) {
+            $file = $request->file('guardian_image');
+            $fileName = time() . '.' . $file->getClientOriginalExtension(); // Create a unique file name
+            $file->storeAs('uploads', $fileName, 'public'); // Store in storage/app/public/uploads
+        }
+
+        // Insert guardian data using raw SQL
+        DB::insert('
         INSERT INTO guardians (name, phone, idcard, district, sector, guardian_image, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
     ', [
-        $request->name,
-        $request->phone,
-        $request->idcard,
-        $request->district,
-        $request->sector,
-        $fileName
-    ]);
+            $request->name,
+            $request->phone,
+            $request->idcard,
+            $request->district,
+            $request->sector,
+            $fileName
+        ]);
 
-    notify()->success('New Guardian created successfully.');
-    return redirect()->back();
-}
+        notify()->success('New Guardian created successfully.');
+        return redirect()->back();
+    }
     public function memberStore(Request $request)
     {
 

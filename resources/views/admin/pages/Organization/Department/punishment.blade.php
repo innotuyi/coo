@@ -56,15 +56,15 @@
                                             </select>
                                         </div>
 
-                                        <div class="form-outline">
+                                        {{-- <div class="form-outline">
                                             <label class="form-label mt-2" for="form11Example1">Punishment Type</label>
                                             <input  class="form-control" name="description"
                                                 id="" required>
-                                        </div>
+                                        </div> --}}
 
                                         <div class="form-outline">
                                             <label class="form-label mt-2" for="form11Example1">Punishment Reason</label>
-                                            <input  class="form-control" name="type"
+                                            <input  class="form-control" name="description"
                                                 id="" required>
                                         </div>
 
@@ -100,7 +100,7 @@
                                 <th>NO</th>
                                 <th>Member Name</th>
                                 <th>Reason</th>
-                                <th>Type</th>
+                                {{-- <th>Type</th> --}}
                                 <th>Charges</th>
                                 <th>Date</th>
 
@@ -114,7 +114,7 @@
                                 <td>{{ $item->id }}</td>
                                 <td>{{ $item->member_name }}</td>
                                 <td>{{ $item->description }}</td>
-                                <td>{{ $item->type }}</td>
+                                {{-- <td>{{ $item->type }}</td> --}}
                                 <td>{{ $item->charges }}</td>
                                 <td>{{ $item->punishimentDate }}</td>
 

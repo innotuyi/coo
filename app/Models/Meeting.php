@@ -11,7 +11,8 @@ class Meeting extends Model
 
     protected $fillable = [
         'topic',
-        'descritption'
+        'descritption',
+        'meeting_date'
 
     ];
 }

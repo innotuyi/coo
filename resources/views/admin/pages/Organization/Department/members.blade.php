@@ -108,6 +108,7 @@
                             <option value="member" selected>Member</option>
                             <option value="admin">Admin</option>
                             <option value="acountant">Acountant</option>
+                            <option value="secretary">Secretary</option>
                         </select>
                     </div>
                 

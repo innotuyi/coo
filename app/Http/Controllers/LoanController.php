@@ -23,9 +23,10 @@ class LoanController extends Controller
         $departments = User::all();
         $leaveTypes = LeaveType::all();
         $currentUser = auth()->user(); // Get the currently logged-in user
-        return view('admin.pages.Leave.leaveForm', compact('leaves', 'leaveTypes', 'departments','currentUser'));
+        $isAccountant = $currentUser->role === 'acountant'; // Check if current user is accountant
+        return view('admin.pages.Leave.leaveForm', compact('leaves', 'leaveTypes', 'departments', 'currentUser', 'isAccountant'));
     }
-
+    
     /**
      * Show the form for creating a new resource.
      */

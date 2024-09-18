@@ -5,18 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Expenditure extends Model
+class Parking extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'category_id',
+        'userID',
+        'cost',
+        'charges',
         'description',
-        'amount',
-        'date',
-        'paid_to',
-        'employee_id',
-        'bank_type',
-        'file'
+        'parking_date'
+
     ];
 }

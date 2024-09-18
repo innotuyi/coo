@@ -224,12 +224,19 @@ class LeaveController extends Controller
         $userId = auth()->user()->id;
 
         // Raw SQL query with a JOIN between users and loans
-        $leaves = DB::select("
+//         $leaves = DB::select("
+//     SELECT loans.id, users.name, users.email, loans.amount, loans.interest_rate, loans.start_date, loans.end_date, loans.status
+//     FROM users
+//     INNER JOIN loans ON users.id = loans.userID
+//     WHERE users.id = ?
+// ", [$userId]);
+
+$leaves = DB::select("
     SELECT loans.id, users.name, users.email, loans.amount, loans.interest_rate, loans.start_date, loans.end_date, loans.status
     FROM users
     INNER JOIN loans ON users.id = loans.userID
-    WHERE users.id = ?
-", [$userId]);
+");
+
 
 
         // Pass the results to the view
