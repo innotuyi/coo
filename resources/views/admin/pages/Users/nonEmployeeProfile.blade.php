@@ -1,6 +1,5 @@
 @extends('admin.master')
 @section('content')
-
     <div class="shadow p-4 d-flex justify-content-between align-items-center ">
         <h4 class="text-uppercase">My Profile</h4>
     </div>

@@ -20,8 +20,8 @@
                 </div>
             </form>
         </div>
-        <a href="{{ route('myLeaveReport') }}" class="btn btn-danger text-capitalize border-0"
-            data-mdb-ripple-color="dark"><i class="fa-regular fa-paste me-1"></i>Report</a>
+        {{-- <a href="{{ route('myLeaveReport') }}" class="btn btn-danger text-capitalize border-0"
+            data-mdb-ripple-color="dark"><i class="fa-regular fa-paste me-1"></i>Report</a> --}}
     </div>
 
 

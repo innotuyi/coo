@@ -41,7 +41,7 @@
                         <h6 class="text-uppercase">Parking</h>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('punishment.ParkingStore') }}" method="post">
+                        <form action="{{ route('punishment.ParkingStore') }}" method="post" enctype="multipart/form-data">
                             @csrf
                             <div class="row mb-4">
                                 <div class=" col">
@@ -87,6 +87,12 @@
                                         <div class="form-outline">
                                             <label class="form-label mt-2" for="form11Example1">Comment</label>
                                             <input  class="form-control" name="description"
+                                                id="" >
+                                        </div>
+
+                                        <div class="form-outline">
+                                            <label class="form-label mt-2" for="form11Example1">Attachment</label>
+                                            <input type="file"  class="form-control" name="attachment"
                                                 id="" >
                                         </div>
                                                                                

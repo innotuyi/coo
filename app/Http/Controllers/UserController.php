@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
 use App\Models\Loan;
+use App\Models\Punishment;
 use App\Models\Share;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -161,6 +162,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(), NOW())', [
         $loans = Loan::where('userID', $userId)->get();
         $shares = Share::where('userID', $userId)->get();
 
+        $punishments = Punishment::where('userID', $userId)->get();
+
+
 
 
 
@@ -176,7 +180,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(), NOW())', [
             $user->delete();
         }
 
-        notify()->success('User Deleted Successfully.');
+        // notify()->success('User Deleted Successfully.');
         return redirect()->back();
     }
 
@@ -188,6 +192,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(), NOW())', [
         $department = User::find($id);
         return view('admin.pages.Organization.Department.editDepartment', compact('department'));
     }
+
+
+    
     public function userUpdate(Request $request, $id)
     {
         // Validate the request
@@ -227,12 +234,12 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(), NOW())', [
                 'password' => $request->filled('password') ? bcrypt($request->password) : $user->password,
             ]);
     
-            notify()->success('User updated successfully.');
-            return redirect()->route('users.list');
+            //notify()->success('User updated successfully.');
+            return redirect()->back();
         } else {
             // Handle the case where the user is not found
             notify()->error('User not found.');
-            return redirect()->route('users.list');
+            return redirect()->back();
         }
     }
     

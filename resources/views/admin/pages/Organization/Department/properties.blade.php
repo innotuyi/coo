@@ -43,10 +43,6 @@
                                         <label class="form-label mt-2" for="location">Location</label>
                                         <input placeholder="Enter Location" class="form-control" name="location" id="location">
                                     </div>
-                                    {{-- <div class="form-outline">
-                                        <label class="form-label mt-2" for="property_file">Property File</label>
-                                        <input type="file" class="form-control" name="property_file" id="property_file" accept=".jpg,.jpeg,.png,.pdf">
-                                    </div> --}}
                                     <div class="form-outline">
                                         <label class="form-label mt-2" for="property_value">Property Value</label>
                                         <input type="number" class="form-control" name="property_value" id="property_value" required>
@@ -60,8 +56,8 @@
                                         <input type="date" class="form-control" name="property_date" id="property_date" required>
                                     </div>
                                     <div class="form-outline">
-                                        <label class="form-label mt-2" for="location">Comment</label>
-                                        <input placeholder="" class="form-control" name="comment" id="location">
+                                        <label class="form-label mt-2" for="comment">Comment</label>
+                                        <input placeholder="" class="form-control" name="comment" id="comment">
                                     </div>
                                 </div>
                             </div>
@@ -83,12 +79,12 @@
                                 <th>Name</th>
                                 <th>Location</th>
                                 <th>Value</th>
-                                {{-- <th>File</th> --}}
                                 <th>Attachment</th>
                                 <th>Date</th>
-                                <th>comment</th>
-
-                                <th>Actions</th>
+                                <th>Comment</th>
+                                @if (auth()->user()->role === 'admin')
+                                    <th>Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -98,12 +94,6 @@
                                 <td>{{ $item->name }}</td>
                                 <td>{{ $item->location }}</td>
                                 <td>{{ $item->property_value }}</td>
-
-                                {{-- <td>
-                                    @if($item->property_file)
-                                        <a href="{{ asset('storage/'.$item->property_file) }}" target="_blank">View File</a>
-                                    @endif
-                                </td> --}}
                                 <td>
                                     @if($item->property_attachment)
                                         <a href="{{ url('storage/'.$item->property_attachment) }}" target="_blank">View Attachment</a>
@@ -111,11 +101,12 @@
                                 </td>
                                 <td>{{ $item->property_date }}</td>
                                 <td>{{ $item->comment }}</td>
-
+                                @if (auth()->user()->role === 'admin')
                                 <td>
                                     <a class="btn btn-success rounded-pill fw-bold text-white" href="{{ route('property.propertyEdit', $item->id) }}">Edit</a>
-                                    {{-- <a class="btn btn-danger rounded-pill fw-bold text-white" href="{{ route('property.deleteProperty', $item->id) }}">Delete</a> --}}
+                                    <a class="btn btn-danger rounded-pill fw-bold text-white" href="{{ route('property.deleteProperty', $item->id) }}">Delete</a>
                                 </td>
+                                @endif
                             </tr>
                             @endforeach
                         </tbody>

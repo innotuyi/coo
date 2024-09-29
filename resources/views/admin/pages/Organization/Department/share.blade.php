@@ -33,14 +33,14 @@
 
             <div class="d-flex justify-content-end">
                 <div class="input-group rounded w-25 mb-5">
-                    <form action="{{ route('searchDepartment') }}" method="get">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search..." name="search">
-                            <button type="submit" class="input-group-text border-0 bg-transparent" id="search-addon">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </form>
+                    <!--<form action="{{ route('searchDepartment') }}" method="get">-->
+                    <!--    <div class="input-group">-->
+                    <!--        <input type="text" class="form-control" placeholder="Search..." name="search">-->
+                    <!--        <button type="submit" class="input-group-text border-0 bg-transparent" id="search-addon">-->
+                    <!--            <i class="fas fa-search"></i>-->
+                    <!--        </button>-->
+                    <!--    </div>-->
+                    <!--</form>-->
                 </div>
             </div>
 
@@ -58,6 +58,7 @@
                                 {{-- <th>Interest Rate</th> --}}
                                 <th>Total Share</th>
                                 <th>Status</th>
+                                <th>View Attachment</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -74,18 +75,78 @@
                                         <td>{{ $item->amount }}</td>
                                         <td>{{ $item->joining_date }}</td>
                                         <td>{{ $item->amount_increase ?? 'N/A' }}</td>
-                                        {{-- <td>{{ $item->interest_rate ?? 'N/A' }}</td> --}}
                                         <td>{{ $item->total_share ?? 'N/A' }}</td>
                                         <td>{{ $item->status }}</td>
                                         <td>
-                                            {{-- Other buttons like Edit or Delete --}}
+                                            @if ($item->meeting_attachment)
+                                                <a href="{{ url('storage/uploads/' . $item->attachment) }}"
+                                                    target="_blank">View Attachment</a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <!-- Conditionally enable/disable the 'Sell share' button -->
                                             <a class="btn btn-danger rounded-pill fw-bold text-white {{ $item->status === 'transferred' ? 'disabled' : '' }}"
                                                 data-bs-toggle="{{ $item->status === 'transferred' ? '' : 'modal' }}"
-                                                data-bs-target="{{ $item->status === 'transferred' ? '' : '#addTransferbtn' }}">
+                                                data-bs-target="{{ $item->status === 'transferred' ? '' : '#addTransferbtn' . $item->id }}">
                                                 Sell share
                                             </a>
+                                            <a class="btn btn-danger rounded-pill fw-bold text-white"
+                                                href="{{ route('share.delete', $item->id) }}">Delete</a>
                                         </td>
                                     </tr>
+
+                                    <!-- Modal HTML -->
+                                    @if ($item->status !== 'transferred')
+                                        <div class="modal fade" id="addTransferbtn{{ $item->id }}" tabindex="-1"
+                                            aria-labelledby="addTransferLabel{{ $item->id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="addTransferLabel{{ $item->id }}">
+                                                            Transfer Shares</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                            aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form action="{{ route('shares.transfer', $item->id) }}"
+                                                            method="post">
+                                                            @csrf
+                                                            @method('put')
+
+                                                            <div class="mb-3">
+                                                                <label for="recipient_userID"
+                                                                    class="form-label">Recipient</label>
+                                                                <select class="form-control" id="recipient_userID"
+                                                                    name="recipient_userID" required>
+                                                                    @foreach ($departments as $user)
+                                                                        <option value="{{ $user->id }}">
+                                                                            {{ $user->name }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label for="amount" class="form-label">Amount
+                                                                    Charged</label>
+                                                                <input type="number" class="form-control" id="amount"
+                                                                    value="500" name="amount" min="0"
+                                                                    step="any" required>
+                                                            </div>
+                                                            <div class="form-outline mt-3">
+                                                                <label class="form-label"
+                                                                    for="attachment">Attachment</label>
+                                                                <input type="file" class="form-control"
+                                                                    name="attachment">
+                                                            </div>
+
+                                                            <button type="submit" class="btn btn-primary">Transfer
+                                                                Shares</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                 @endforeach
                             @endif
                         </tbody>
@@ -107,12 +168,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('organization.shareStore') }}" method="post">
+                    <form action="{{ route('organization.shareStore') }}" method="post" enctype="multipart/form-data">
                         @csrf
                         <div class="row mb-4">
                             <div class="col">
                                 <div class="form-outline">
-                                    <label class="form-label" for="memberID">Member</label>
+                                    <label class="form-label" for="userID">Member</label>
                                     <select class="form-control" name="userID">
                                         @foreach ($departments as $department)
                                             <option value="{{ $department->id }}">{{ $department->name }}</option>
@@ -121,61 +182,24 @@
                                 </div>
                                 <div class="form-outline mt-3">
                                     <label class="form-label" for="amount">Amount</label>
-                                    <input type="number" class="form-control" name="amount">
+                                    <input type="number" class="form-control" name="amount" required>
                                 </div>
                                 <div class="form-outline mt-3">
                                     <label class="form-label" for="joining_date">Date</label>
                                     <input type="date" class="form-control" name="joining_date" required>
                                 </div>
                                 <div class="form-outline mt-3">
-                                    <label class="form-label" for="amount_increase">Amount Increase/ </label>
+                                    <label class="form-label" for="amount_increase">Amount Increase</label>
                                     <input type="number" class="form-control" name="amount_increase">
                                 </div>
-                                {{-- <div class="form-outline mt-3">
-                                    <label class="form-label" for="interest_rate">Interest Rate</label>
-                                    <input type="number" class="form-control" name="interest_rate">
-                                </div> --}}
+
                             </div>
                         </div>
                         <div class="text-center">
                             <button type="submit" class="btn btn-success">Create</button>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal HTML -->
-    <div class="modal fade" id="addTransferbtn" tabindex="-1" aria-labelledby="addTransferLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addTransferLabel">Transfer Shares</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('shares.transfer', $item->id) }}" method="post">
-                        @csrf
-                        @method('put')
-
-                        <div class="mb-3">
-                            <label for="recipient_userID" class="form-label">Recipient</label>
-                            <select class="form-control" id="recipient_userID" name="recipient_userID" required>
-                                @foreach ($departments as $user) 
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="amount" class="form-label">Amount Charged</label>
-                            <input type="number" class="form-control" id="amount" value=500 name="amount"
-                                min="0" step="any" required>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Transfer Shares</button>
-                    </form>
                 </div>
             </div>
         </div>

@@ -35,7 +35,7 @@
 
 
         {{-- Manage Member --}}
-        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'secretary')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'secretary' || auth()->user()->role === 'accountant')
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#widgetsDropdown" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">
@@ -183,22 +183,24 @@
 
 
 
-        {{-- Manage Property --}}
-        @if (auth()->user()->role === 'admin')
-            <li class="sidebar-list-item py-2">
-                <a class="sidebar-link text-muted" href="#" data-bs-target="#property" role="button"
-                    aria-expanded="false" data-bs-toggle="collapse">
-                    <i class="fa-solid fa-building me-2 text-info"></i>
-                    <span class="sidebar-link-title fs-6">Manage Property</span></a>
-                <ul class="sidebar-menu list-unstyled collapse" id="property">
-                    <li class="sidebar-list-item py-2 fs-6">
-                        <a class="sidebar-link text-muted ms-4" href="{{ route('organization.properties') }}">
-                            <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Property
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        @endif
+       {{-- Manage Property --}}
+@if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant')
+<li class="sidebar-list-item py-2">
+    <a class="sidebar-link text-muted" href="#" data-bs-target="#property" role="button"
+        aria-expanded="false" data-bs-toggle="collapse">
+        <i class="fa-solid fa-building me-2 text-info"></i>
+        <span class="sidebar-link-title fs-6">Manage Property</span>
+    </a>
+    <ul class="sidebar-menu list-unstyled collapse" id="property">
+        <li class="sidebar-list-item py-2 fs-6">
+            <a class="sidebar-link text-muted ms-4" href="{{ route('organization.properties') }}">
+                <i class="fa-regular fa-circle-right fa-sm me-1 text-info"></i>Property
+            </a>
+        </li>
+    </ul>
+</li>
+@endif
+
 
         {{-- Manage Meeting --}}
         @if (auth()->user()->role === 'admin')

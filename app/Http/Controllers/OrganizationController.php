@@ -18,6 +18,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class OrganizationController extends Controller
@@ -281,50 +282,83 @@ class OrganizationController extends Controller
 
     //     return redirect()->back()->with('success', 'Shares transferred successfully.');
     // }
-
     public function transferShares(Request $request, $shareId)
     {
+        // Start a database transaction
+        DB::beginTransaction();
+    
         try {
-            // Validate the request
+            // Step 1: Validate the request
             $request->validate([
                 'recipient_userID' => 'required|exists:users,id',
+                'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             ]);
-
-            // Retrieve the share record to be transferred
-            $share = DB::table('shares')->where('id', $shareId)->first();
-
+    
+            // Step 2: Retrieve the share record to be transferred
+            $share = DB::table('shares')
+                ->select('amount', 'amount_increase')
+                ->where('id', $shareId)
+                ->first();
+    
             if (!$share) {
                 return redirect()->back()->withErrors('Share record not found.');
             }
-
-            // Transfer the share by creating a new record for the recipient
-            DB::table('shares')->insert([
+    
+            // Step 3: Handle file upload if exists
+            $attachmentName = null;
+            if ($request->hasFile('attachment')) {
+                $attachment = $request->file('attachment');
+                $attachmentName = time() . '_' . uniqid() . '.' . $attachment->getClientOriginalExtension();
+                $path = $attachment->storeAs('uploads', $attachmentName, 'public');
+    
+                if (!$path) {
+                    return redirect()->back()->withErrors('Failed to upload attachment.');
+                }
+            }
+    
+            // Step 4: Calculate total shares without interest_rate
+            $totalShare = $share->amount + ($share->amount_increase ?? 0);
+    
+            // Step 5: Prepare data for insertion
+            $insertData = [
                 'userID' => $request->recipient_userID,
-                'amount' => $share->amount, // Transfer the entire amount
-                'amount_increase' => $share->amount_increase ?? null, // Maintain the amount increase
-                'interest_rate' => $share->interest_rate ?? null, // Set interest rate (0 if null)
-                'total_share' =>  $share->amount +  $share->amount_increase + $share->interest_rate, // Maintain the total shares
-                'joining_date' => now(), // Set the current date as joining date
+                'amount' => $share->amount,
+                'amount_increase' => $share->amount_increase,
+                'total_share' => $totalShare,
+                'joining_date' => now(),
+                'attachment' => $attachmentName, // Ensure this matches your table column
+                'status' => 'active', // Optional: Set default status
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
-
-            // Optionally, you can delete the original share record if needed
-            // Update the status of the original share record
+            ];
+    
+            // Step 6: Insert the new share record
+            DB::table('shares')->insert($insertData);
+    
+            // Step 7: Update the original share record's status
             DB::table('shares')->where('id', $shareId)->update([
-                'status' => 'transferred', // Mark the share as transferred
-                'updated_at' => now(), // Update the timestamp
+                'status' => 'transferred',
+                'updated_at' => now(),
             ]);
-
-
-            // Success message
+    
+            // Commit the transaction
+            DB::commit();
+    
+            // Step 8: Redirect with success message
             return redirect()->route('organization.share')->with('success', 'Shares transferred successfully.');
         } catch (\Exception $e) {
-            // Catch any unexpected errors
+            // Rollback the transaction on error
+            DB::rollBack();
+    
+            // Log the error for debugging
+            Log::error('Error transferring shares:', ['error' => $e->getMessage()]);
+    
+            // Redirect back with error message
             return redirect()->back()->withErrors('An error occurred: ' . $e->getMessage());
         }
     }
-
+    
+    
 
 
 
@@ -602,20 +636,35 @@ class OrganizationController extends Controller
             'charges' => 'nullable|numeric',
             'description' => 'nullable|string|max:255',
             'parking_date' => 'nullable|date',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+
+           // Step 3: Handle file upload if exists
+           $attachmentName = null;
+           if ($request->hasFile('attachment')) {
+               $attachment = $request->file('attachment');
+               $attachmentName = time() . '_' . uniqid() . '.' . $attachment->getClientOriginalExtension();
+               $path = $attachment->storeAs('uploads', $attachmentName, 'public');
+   
+               if (!$path) {
+                   return redirect()->back()->withErrors('Failed to upload attachment.');
+               }
+           }
+
         // Insert data using raw SQL
         DB::insert('
-            INSERT INTO parkings (userID, cost, charges, description, parking_date, created_at, updated_at)
+            INSERT INTO parkings (userID, cost, charges, description,attachment parking_date, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, NOW(), NOW())', [
             $request->userID,
             $request->cost,
             $request->charges,
             $request->description,
+            $attachmentName,
             $request->parking_date
         ]);
 
@@ -723,11 +772,15 @@ class OrganizationController extends Controller
     public function punishmentEdit($id)
     {
 
-        $department = Punishment::join('members', 'punishments.memberID', '=', 'members.id')
-            ->select('punishments.*', 'members.name as member_name', 'members.phone as member_phone')
-            ->where('punishments.id', $id)
-            ->firstOrFail();
+        $department = DB::table('punishments')
+        ->join('users', 'punishments.userID', '=', 'users.id')
+        ->select('punishments.*', 'users.name as member_name', 'users.phone as member_phone')
+        ->where('punishments.id', $id)
+        ->first();
 
+    if (!$department) {
+        return redirect()->back()->with('error', 'Punishment not found.');
+    }
 
         return  view('admin.pages.Organization.Department.punishmentEdit', compact('department'));
     }
@@ -906,6 +959,7 @@ class OrganizationController extends Controller
             'category_id' => 'required|exists:expenditure_categories,id',
             'description' => 'nullable|string',
             'amount' => 'required|numeric',
+            "bank_type"=>'|string',
             'date' => 'required|date',
             'paid_to' => 'nullable|string',
             'meeting_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -932,15 +986,17 @@ class OrganizationController extends Controller
 
         // Insert the data using raw SQL
         DB::insert('
-            INSERT INTO expenditures (category_id, description, amount, date, paid_to, meeting_attachment, employee_id, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
+            INSERT INTO expenditures (category_id, description, amount, date, paid_to, bank_type, meeting_attachment, employee_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
             $request->category_id,
             $request->description,
             $request->amount,
             $date,
             $request->paid_to,
+            $request->bank_type,
             $attachmentName,
-            $request->employee_id
+            $request->employee_id,
+           
         ]);
 
         // Redirect back with success message
@@ -1254,12 +1310,20 @@ class OrganizationController extends Controller
         if ($department) {
             $department->delete();
         }
-        notify()->success('Guardian Deleted Successfully.');
+        // notify()->success('Guardian Deleted Successfully.');
         return redirect()->back();
     }
     public function edit($id)
     {
-        $department = User::find($id);
+        $department = DB::select('SELECT * FROM guardians WHERE id = ?', [$id]);
+
+    // Since DB::select returns an array of results, get the first record
+    $department = $department[0] ?? null;
+
+    if (!$department) {
+        // Handle the case where the record isn't found
+        return redirect()->back()->with('error', 'Guardian not found.');
+    }
         return view('admin.pages.Organization.Department.editDepartment', compact('department'));
     }
 

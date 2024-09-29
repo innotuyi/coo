@@ -19,69 +19,106 @@
             @endforeach
         </ul>
     </div>
-@endif
+    @endif
 
     <!--Section: Table Block-->
     <section>
 
         <div class="d-flex justify-content-end">
             <div class="input-group rounded w-25 mb-5">
-                <form action="{{ route('searchDepartment') }}" method="get">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search..." name="search">
-                        <button type="submit" class="input-group-text border-0 bg-transparent" id="search-addon"
-                            style="display: inline;">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </form>
+                <!--<form action="{{ route('searchDepartment') }}" method="get">-->
+                <!--    <div class="input-group">-->
+                <!--        <input type="text" class="form-control" placeholder="Search..." name="search">-->
+                <!--        <button type="submit" class="input-group-text border-0 bg-transparent" id="search-addon"-->
+                <!--            style="display: inline;">-->
+                <!--            <i class="fas fa-search"></i>-->
+                <!--        </button>-->
+                <!--    </div>-->
+                <!--</form>-->
             </div>
         </div>
 
         <!-- Members Table -->
         <div class="w-100 card">
             <div class="card-body">
-                <table class="table align-middle mb-4 text-center bg-white">
-                    <thead class="bg-light">
-                        <tr>
-                            <th>NO</th>
-                            <th>Name</th>
-                            <th>Guardian</th>
-                            <th>Relationship</th>
-                            <th>Telephone</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>District</th>
-                            <th>Join Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($members as $key => $item)
-                        <tr>
-                            <td>{{ $key + 1 }}</td>
-                            <td>{{ $item->name }}</td>
-                            <td>{{ $item->guardian_name }}</td>
-                            <td>{{ $item->user_relationship }}</td>
-                            <td>{{ $item->phone }}</td>
-                            <td>{{ $item->email }}</td>
-                            <td>{{ $item->role }}</td>
-                            <td>{{ $item->district }}</td>
-                            <td>{{ $item->created_at }}</td>
-                            <td>
-                                <a class="btn btn-success rounded-pill fw-bold text-white"
-                                    href="{{ route('edit', $item->id) }}">Edit</a>
-                                <a class="btn btn-danger rounded-pill fw-bold text-white"
-                                    href="{{ route('Organization.delete', $item->id) }}">Delete</a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped align-middle mb-4 text-center bg-white">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="text-wrap">NO</th>
+                                <th class="text-wrap">Name</th>
+                                <th class="text-wrap">Guardian</th>
+                                <th class="text-wrap">Relationship</th>
+                                <th class="text-wrap">Telephone</th>
+                                <th class="text-wrap">Email</th>
+                                <th class="text-wrap">Role</th>
+                                <th class="text-wrap">District</th>
+                                <th class="text-wrap">Join Date</th>
+                                <th class="text-wrap">Image</th>
+                                @if (auth()->user()->role === 'admin')
+                                    <th>Actions</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($members as $key => $item)
+                            <tr>
+                                <td class="text-wrap">{{ $key + 1 }}</td>
+                                <td class="text-wrap">{{ $item->name }}</td>
+                                <td class="text-wrap">{{ $item->guardian_name }}</td>
+                                <td class="text-wrap">{{ $item->user_relationship }}</td>
+                                <td class="text-wrap">{{ $item->phone }}</td>
+                                <td class="text-wrap">
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px;" data-bs-toggle="tooltip" title="{{ $item->email }}">
+                                        {{ $item->email }}
+                                    </span>
+                                </td>
+                                <td class="text-wrap">{{ ucfirst($item->role) }}</td>
+                                <td class="text-wrap">{{ $item->district }}</td>
+                                <td class="text-wrap">{{ \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') }}</td>
+                                <td class="text-wrap">
+                                    <img 
+                                        src="{{ url('storage/uploads/' . $item->user_image) }}" 
+                                        alt="User Image" 
+                                        class="img-thumbnail" 
+                                        style="max-width:50px; max-height:50px; cursor: pointer;" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#imageModal" 
+                                        data-image="{{ url('storage/uploads/' . $item->user_image) }}"
+                                    >
+                                </td>
+                                 @if (auth()->user()->role === 'admin')
+                                <td class="text-wrap">
+                                    <a class="btn btn-success rounded-pill fw-bold text-white"
+                                        href="{{ route('editUser', $item->id) }}">Edit</a>
+                                    <a class="btn btn-danger rounded-pill fw-bold text-white"
+                                        href="{{ route('delete', $item->id) }}">Delete</a>
+                                </td>
+                                @endif
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     </section>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- modal-lg for larger size -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Member Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" id="modalImage" alt="Member Image" class="img-fluid">
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Add Member Modal -->
@@ -107,7 +144,7 @@
                         <select class="form-control" name="role" required>
                             <option value="member" selected>Member</option>
                             <option value="admin">Admin</option>
-                            <option value="acountant">Acountant</option>
+                            <option value="accountant">Accountant</option>
                             <option value="secretary">Secretary</option>
                         </select>
                     </div>
@@ -134,6 +171,7 @@
                         </select>
                     </div>
 
+                    <!-- Relationship Type -->
                     <div class="mb-3">
                         <label for="relationship_type" class="form-label">Relationship Type</label>
                         <select class="form-control" name="user_relationship" id="user_relationship" required>
@@ -194,5 +232,55 @@
         </div>
     </div>
 </div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- modal-lg for larger size -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Member Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" id="modalImage" alt="Member Image" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Handle Image Modal and Tooltips -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Handle Image Modal
+        var imageModal = document.getElementById('imageModal');
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            var img = event.relatedTarget; // Image that triggered the modal
+            var imageSrc = img.getAttribute('data-image'); // Extract info from data-* attributes
+            var modalImage = imageModal.querySelector('#modalImage');
+            modalImage.src = imageSrc;
+            modalImage.alt = img.alt;
+        });
+    });
+</script>
+
+<!-- Optional: Custom CSS for Better Table Layout -->
+<style>
+    /* Allow table cells to wrap text */
+    .table td, .table th {
+        white-space: normal; /* Allows text to wrap */
+        word-wrap: break-word; /* Breaks long words */
+    }
+
+    /* Optional: Adjust table layout for better readability */
+    .table th, .table td {
+        vertical-align: middle; /* Vertically center content */
+    }
+</style>
 
 @endsection

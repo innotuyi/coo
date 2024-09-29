@@ -19,8 +19,9 @@
             @endforeach
         </ul>
     </div>
-@endif
-    <!--Section: Table Block-->
+    @endif
+
+    <!-- Section: Table Block -->
     <section>
         <div class="d-flex justify-content-end mb-4">
             <div class="input-group rounded w-25">
@@ -60,7 +61,16 @@
                             <td>{{ $item->phone }}</td>
                             <td>{{ $item->district }}</td>
                             <td>{{ $item->sector }}</td>
-                            <td><img src="{{ url('storage/uploads/' . $item->guardian_image) }}" alt="Guardian Image" style="width:50px; height:50px;"></td>
+                            <td>
+                                <img 
+                                    src="{{ url('storage/uploads/' . $item->guardian_image) }}" 
+                                    alt="Guardian Image" 
+                                    style="width:50px; height:50px; cursor: pointer;" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#imageModal" 
+                                    data-image="{{ url('storage/uploads/' . $item->guardian_image) }}"
+                                >
+                            </td>
                             <td>
                                 <a class="btn btn-success rounded-pill fw-bold text-white"
                                     href="{{ route('Organization.edit', $item->id) }}">Edit</a>
@@ -75,6 +85,21 @@
         </div>
 
     </section>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- modal-lg for larger size -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Guardian Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" id="modalImage" alt="Guardian Image" class="img-fluid">
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Add Guardian Modal -->
@@ -123,5 +148,19 @@
         </div>
     </div>
 </div>
+
+<!-- JavaScript to Handle Image Modal -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var imageModal = document.getElementById('imageModal');
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            var img = event.relatedTarget; // Image that triggered the modal
+            var imageSrc = img.getAttribute('data-image'); // Extract info from data-* attributes
+            var modalImage = imageModal.querySelector('#modalImage');
+            modalImage.src = imageSrc;
+            modalImage.alt = img.alt;
+        });
+    });
+</script>
 
 @endsection

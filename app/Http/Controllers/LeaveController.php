@@ -408,10 +408,10 @@ $leaves = DB::select("
     public function rejectLeave($id)
     {
         $leave = Leave::find($id);
-        $leave->status = 'rejected'; // Assuming 'status' is a field in your 'leaves' table
+        $leave->status = '0'; // Assuming 'status' is a field in your 'leaves' table
         $leave->save();
 
-        notify()->error('Leave rejected');
+        // notify()->error('Leave rejected');
         return redirect()->back();
     }
 

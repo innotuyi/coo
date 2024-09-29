@@ -238,7 +238,7 @@ Route::get('/users/create/{employeeId}', [UserController::class, 'createForm'])-
 Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
 Route::get('/users/{id}', [UserController::class, 'userProfile'])->name('users.profile.view');
 Route::get('/user/delete/{id}', [UserController::class, 'userDelete'])->name('delete');
-Route::get('/user/edit/{id}', [UserController::class, 'userEdit'])->name('edit');
+Route::get('/user/edit/{id}', [UserController::class, 'userEdit'])->name('editUser');
 Route::put('/user/update/{id}', [UserController::class, 'userUpdate'])->name('update');
 Route::get('/search-user', [UserController::class, 'searchUser'])->name('searchUser');
 
