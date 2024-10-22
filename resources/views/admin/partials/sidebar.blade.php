@@ -59,7 +59,7 @@
 
 
         {{-- Manage Share --}}
-        @if (auth()->user()->role === 'admin')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant')
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#share" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">
@@ -149,7 +149,7 @@
            {{-- @endif --}}
 
               {{-- Manage Loan --}}
-              @if (auth()->user()->role === 'member'||auth()->user()->role === 'acountant')
+              @if (auth()->user()->role === 'member'|| auth()->user()->role === 'accountant')
               <li class="sidebar-list-item py-2">
                   <a class="sidebar-link text-muted" href="#" data-bs-target="#componentsDropdown" role="button"
                       aria-expanded="false" data-bs-toggle="collapse">
@@ -184,7 +184,7 @@
 
 
        {{-- Manage Property --}}
-@if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant')
+@if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant' || auth()->user()->role === 'secretary')
 <li class="sidebar-list-item py-2">
     <a class="sidebar-link text-muted" href="#" data-bs-target="#property" role="button"
         aria-expanded="false" data-bs-toggle="collapse">
@@ -203,7 +203,7 @@
 
 
         {{-- Manage Meeting --}}
-        @if (auth()->user()->role === 'admin')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant' || auth()->user()->role === 'secretary')
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#meeting" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">
@@ -220,7 +220,7 @@
         @endif
 
         {{-- Manage Punishment --}}
-        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'acountant')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant' )
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#punishment" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">
@@ -239,7 +239,7 @@
 
 
         {{-- Manage Punishment --}}
-        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'acountant')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant')
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#parking" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">
@@ -260,7 +260,7 @@
 
 
         {{-- Manage Expenditure --}}
-        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'acountant')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant' || auth()->user()->role === 'secretary')
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#expenduture" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">
@@ -285,7 +285,7 @@
 
 
         {{-- Manage Expenditure --}}
-        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'acountant')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'accountant' || auth()->user()->role === 'secretary')
             <li class="sidebar-list-item py-2">
                 <a class="sidebar-link text-muted" href="#" data-bs-target="#service" role="button"
                     aria-expanded="false" data-bs-toggle="collapse">

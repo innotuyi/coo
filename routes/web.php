@@ -46,7 +46,24 @@ Route::get('/organization/department', [OrganizationController::class, 'departme
 
 Route::get('/organization/account', [CooperativeAccountController::class, 'index'])->name('organization.account');
 
+Route::get('/organization/account', [CooperativeAccountController::class, 'index'])->name('organization.account');
+
+
 Route::post('/organization/store', [CooperativeAccountController::class, 'store'])->name('cooperative.store');
+
+
+Route::post('/organization/delete/{id}', [CooperativeAccountController::class, 'destroy'])->name('cooperative.delete');
+
+
+Route::post('/organization/edit/{id}', [CooperativeAccountController::class, 'update'])->name('cooperative.edit');
+
+
+Route::get('/organization/edit/{id}', [CooperativeAccountController::class, 'update'])->name('cooperative.update');
+
+
+
+
+
 
 
 

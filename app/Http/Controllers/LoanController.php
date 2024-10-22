@@ -17,16 +17,16 @@ class LoanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function loan()
+  public function loan()
     {
         $leaves = Leave::all();
         $departments = User::all();
         $leaveTypes = LeaveType::all();
         $currentUser = auth()->user(); // Get the currently logged-in user
-        $isAccountant = $currentUser->role === 'acountant'; // Check if current user is accountant
+        $isAccountant = $currentUser->role === 'accountant'; // Check if current user is accountant
         return view('admin.pages.Leave.leaveForm', compact('leaves', 'leaveTypes', 'departments', 'currentUser', 'isAccountant'));
     }
-    
+
     /**
      * Show the form for creating a new resource.
      */
@@ -40,15 +40,15 @@ class LoanController extends Controller
     {
         // Validate the input
         $validate = Validator::make($request->all(), [
-            'amount' => 'required|numeric|min:0|max:700000', // Ensure the amount does not exceed 700,000 RWF
+            'amount' => 'required|numeric|min:0|max:700000',
             'start_date' => 'required|date|after:today',
             'end_date' => 'required|date|after_or_equal:start_date',
             'userID' => 'required|exists:users,id',
         ]);
     
         if ($validate->fails()) {
-            notify()->error($validate->getMessageBag());
-            return redirect()->back();
+            // Store validation error messages in the session
+            return redirect()->back()->withErrors($validate)->withInput();
         }
     
         // Ensure 'start_date' is not in the past
@@ -57,15 +57,15 @@ class LoanController extends Controller
         $toDate = Carbon::parse($request->end_date);
     
         if ($fromDate->lessThanOrEqualTo($today)) {
-            notify()->error('Loan start date should be a future date.');
-            return redirect()->back();
+            // Flash error message
+            return redirect()->back()->with('error', 'Loan start date should be a future date.');
         }
     
         // Calculate the number of months for the loan
         $months = $fromDate->diffInMonths($toDate);
     
         // Set fixed interest rates
-        $interestRate = $months <= 8 ? 5 : 15; // 5% if within 8 months, otherwise 15%
+        $interestRate = $months <= 8 ? 5 : 15;
     
         // Insert new loan record using raw SQL
         DB::insert('
@@ -76,12 +76,13 @@ class LoanController extends Controller
             $interestRate,
             $fromDate,
             $toDate,
-            '0' // Loan status, 0 for not approved
+            '0'
         ]);
     
-        notify()->success('Applied Loan successfully');
-        return redirect()->back();
+        // Flash success message
+        return redirect()->back()->with('success', 'Loan application submitted successfully.');
     }
+    
     
     public function myLeave()
     {

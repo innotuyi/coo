@@ -407,14 +407,22 @@ $leaves = DB::select("
 
     public function rejectLeave($id)
     {
-        $leave = Leave::find($id);
-        $leave->status = '0'; // Assuming 'status' is a field in your 'leaves' table
-        $leave->save();
+         try {
+        // Update the status of the loan record to 'rejected' using raw SQL
+        DB::table('loans')
+            ->where('id', $id)
+            ->update(['status' => '0']);
 
-        // notify()->error('Leave rejected');
-        return redirect()->back();
+        // Optionally, you can use a notification system to alert the user
+        //notify()->error('Leave rejected');
+
+        // Redirect back with a success message
+        return redirect()->back()->with('success', 'Loan rejected successfully.');
+    } catch (\Exception $e) {
+        // Catch any unexpected errors
+        return redirect()->back()->withErrors('An error occurred: ' . $e->getMessage());
     }
-
+    }
     // Leave Type
     public function leaveType()
     {

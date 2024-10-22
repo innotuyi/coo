@@ -76,41 +76,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('cooperative.store') }}" method="post">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="type" class="form-label">Type</label>
-                        <input type="text" class="form-control" name="type" placeholder="Enter Account Type">
-                    </div>
-                    <div class="mb-3">
-                        <label for="account_number" class="form-label">Account Number</label>
-                        <input type="text" class="form-control" name="account_number" placeholder="Enter Account Number" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="account_holder_name" class="form-label">Account Holder Name</label>
-                        <input type="text" class="form-control" name="account_holder_name" placeholder="Enter Account Holder Name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="balance" class="form-label">Balance</label>
-                        <input type="number" step="0.01" class="form-control" name="balance" placeholder="Enter Balance" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="interest_rate" class="form-label">Interest Rate</label>
-                        <input type="number" step="0.01" class="form-control" name="interest_rate" placeholder="Enter Interest Rate" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="opening_date" class="form-label">Opening Date</label>
-                        <input type="date" class="form-control" name="opening_date" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="punishimentDate" class="form-label">Punishment Date (optional)</label>
-                        <input type="date" class="form-control" name="punishimentDate">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Create</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </form>
+               
+                
             </div>
         </div>
     </div>

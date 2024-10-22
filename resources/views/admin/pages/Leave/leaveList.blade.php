@@ -44,11 +44,20 @@
                 <td>{{ $leave->end_date }}</td>
                 <td>{{ $leave->status }}</td>
 
-                <td>
-                    @if ($leave->status == 'approved')
-                    <span class="text-white fw-bold bg-green rounded-pill p-2">Approved</span>
-                    @elseif ($leave->status == 'rejected')
-                    <span class="text-white fw-bold bg-red rounded-pill p-2">Rejected</span>
+
+
+
+            
+
+
+                    <td>
+                        @if ($leave->status === '1')
+                        <span class="text-white fw-bold bg-green rounded-pill p-2">Accepted</span>
+                        @elseif ($leave->status === '0')
+                        <span class="text-white fw-bold bg-red rounded-pill p-2">Rejected</span>
+                        @else
+                        <span class="text-white fw-bold bg-warning rounded-pill p-2">Pending</span>
+                        @endif
                     @else
                     <a class="btn btn-success rounded-pill "
                         href="{{ route('leave.approve', ['id' => $leave->id]) }}">Approve</a>
